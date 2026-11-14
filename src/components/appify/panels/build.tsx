@@ -28,6 +28,9 @@ import { downloadBuildPackage } from "@/lib/appify/export-zip";
 import type { AppRecord, BuildOutput, BuildPlatform, BuildRecord } from "@/lib/appify/types";
 import { cn } from "@/lib/utils";
 
+/* Result of one real server-side APK build (cached per build id) */
+type ApkArtifact = { url: string; name: string; sizeMb: number };
+
 export function BuildPanel({ app }: { app: AppRecord }) {
   const { d, lang } = useLang();
   const addBuild = useAppifyStore((s) => s.addBuild);
@@ -40,6 +43,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
   const [progress, setProgress] = useState(0);
   const [runningId, setRunningId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [apkArtifacts, setApkArtifacts] = useState<Record<string, ApkArtifact>>({});
   const intervalRef = useRef<number | null>(null);
 
   // normalize builds left "running" by a previous session
@@ -64,18 +68,64 @@ export function BuildPanel({ app }: { app: AppRecord }) {
     };
   }, []);
 
-  /* Download the configuration package. Read-only: it never mutates or
-   * deletes the app — the record stays intact in the dashboard. */
+  /* Download the build artifact. Android APK builds download the REAL signed
+   * installable APK (built on the server); other outputs download the
+   * configuration ZIP package. Read-only: it never mutates or deletes the
+   * app — the record stays intact in the dashboard. */
   const handleDownload = async (b: BuildRecord) => {
     if (downloadingId) return;
     setDownloadingId(b.id);
     try {
-      await downloadBuildPackage(app, b, lang);
-      toast({ title: d.toast.zipReady });
+      if (b.platform === "android" && b.output === "apk") {
+        let artifact = apkArtifacts[b.id];
+        if (!artifact || !artifact.url) {
+          // blobs die on page reload — rebuild on demand, then cache again
+          artifact = await requestRealApk(b);
+        }
+        if (!artifact || !artifact.url) throw new Error("apk build failed");
+        const a = document.createElement("a");
+        a.href = artifact.url;
+        a.download = artifact.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast({ title: d.toast.apkReady });
+      } else {
+        await downloadBuildPackage(app, b, lang);
+        toast({ title: d.toast.zipReady });
+      }
     } catch {
-      toast({ title: d.toast.zipFailed, variant: "destructive" });
+      toast({ title: b.output === "apk" ? d.toast.apkFailed : d.toast.zipFailed, variant: "destructive" });
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  /* Produce the real, signed, installable APK on the server and cache the
+   * blob under the build id. Returns the cached artifact (or null). */
+  const requestRealApk = async (record: BuildRecord): Promise<ApkArtifact | null> => {
+    try {
+      const res = await fetch("/api/build-apk", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          app,
+          build: { version: record.version, versionCode: record.versionCode },
+        }),
+      });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      if (!blob.size) return null;
+      const safe = (app.name || "app").replace(/[^\w.-]+/g, "-").replace(/^-|-$/g, "") || "app";
+      const artifact: ApkArtifact = {
+        url: URL.createObjectURL(blob),
+        name: `${safe}-v${record.version}-${record.versionCode}.apk`,
+        sizeMb: blob.size / (1024 * 1024),
+      };
+      setApkArtifacts((prev) => ({ ...prev, [record.id]: artifact }));
+      return artifact;
+    } catch {
+      return null;
     }
   };
 
@@ -101,6 +151,42 @@ export function BuildPanel({ app }: { app: AppRecord }) {
     let checked = isSampleUrl(app.url);
     if (checked) updateBuild(app.id, record.id, { siteCheckOk: true });
 
+    // kick off the real signed-APK build on the server in parallel with the
+    // simulated pipeline — the download button then serves the actual binary
+    const realIsApk = platform === "android" && output === "apk";
+    let realSizeMb: number | null = null;
+    let realDone = !realIsApk;
+    if (realIsApk) {
+      requestRealApk(record).then((artifact) => {
+        realSizeMb = artifact ? artifact.sizeMb : null;
+        realDone = true;
+      });
+    }
+
+    const finalize = () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      const durationSec = Math.max(12, Math.round((Date.now() - record.startedAt) / 1000));
+      const estSizeMb =
+        platform === "ios"
+          ? 26 + Math.round(Math.random() * 120) / 10
+          : output === "aab"
+            ? 18 + Math.round(Math.random() * 80) / 10
+            : 20 + Math.round(Math.random() * 100) / 10;
+      updateBuild(app.id, record.id, {
+        status: "success",
+        progress: 100,
+        finishedAt: Date.now(),
+        sizeMb: realSizeMb ?? estSizeMb,
+        durationSec,
+      });
+      // bump version code for next build
+      updateApp(app.id, (a) => ({ ...a, versionCode: a.versionCode + 1, updatedAt: Date.now() }));
+      setBusy(false);
+      setRunningId(null);
+      setProgress(100);
+      toast({ title: realIsApk && realSizeMb != null ? d.toast.apkReady : d.toast.buildDone });
+    };
+
     intervalRef.current = window.setInterval(() => {
       prog += 0.45 + Math.random() * 0.85;
       if (!checked && prog > 14) {
@@ -122,28 +208,12 @@ export function BuildPanel({ app }: { app: AppRecord }) {
             });
         }
       }
-      if (prog >= 100) {
-        prog = 100;
-        if (intervalRef.current) window.clearInterval(intervalRef.current);
-        const durationSec = Math.max(12, Math.round((Date.now() - record.startedAt) / 1000));
-        const sizeMb =
-          platform === "ios"
-            ? 26 + Math.round(Math.random() * 120) / 10
-            : output === "aab"
-              ? 18 + Math.round(Math.random() * 80) / 10
-              : 20 + Math.round(Math.random() * 100) / 10;
-        updateBuild(app.id, record.id, {
-          status: "success",
-          progress: 100,
-          finishedAt: Date.now(),
-          sizeMb,
-          durationSec,
-        });
-        // bump version code for next build
-        updateApp(app.id, (a) => ({ ...a, versionCode: a.versionCode + 1, updatedAt: Date.now() }));
-        setBusy(false);
-        setRunningId(null);
-        toast({ title: d.toast.buildDone });
+      if (prog >= 99) {
+        if (realDone) {
+          finalize();
+          return;
+        }
+        prog = 98; // hold while the server finishes the real signed binary
       }
       setProgress(prog);
     }, 130);
@@ -349,7 +419,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground" dir="ltr">
                       <span>{b.platform === "ios" ? "🍎 iOS" : "🤖 Android"}</span>
-                      {b.sizeMb !== undefined && <span>{b.sizeMb.toFixed(1)} MB</span>}
+                      {b.sizeMb !== undefined && <span>{b.sizeMb < 1 ? `${Math.round(b.sizeMb * 1024)} KB` : `${b.sizeMb.toFixed(1)} MB`}</span>}
                       {b.durationSec !== undefined && <span>{b.durationSec}s</span>}
                       <span>{formatTime(b.startedAt, lang)}</span>
                       {b.siteCheckOk === false && <span className="text-amber-600">⚠ site</span>}

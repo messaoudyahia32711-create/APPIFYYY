@@ -77,17 +77,12 @@ function VirtualWebView({
 }) {
   const pageRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ w: number; h: number }>({ w: 304, h: 460 });
-  const [reloadKey, setReloadKey] = useState(0);
+  const [localReload, setLocalReload] = useState(0);
   // loading is derived: the spinner shows until the iframe reports "load"
   // (or a safety timeout fires for sites that refuse to be framed)
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
-  const viewKey = `${url}-${reloadKey}`;
+  const viewKey = `${url}-${reloadToken}-${localReload}`;
   const loading = loadedKey !== viewKey;
-
-  // external reload requests (toolbar button) bump the internal reload counter
-  useEffect(() => {
-    if (reloadToken > 0) setReloadKey((k) => k + 1);
-  }, [reloadToken]);
 
   useEffect(() => {
     const el = pageRef.current;
@@ -123,7 +118,7 @@ function VirtualWebView({
             <span className="truncate text-[11px] font-medium text-gray-600">{url.replace(/^https?:\/\//, "")}</span>
           </span>
           <button
-            onClick={() => setReloadKey((k) => k + 1)}
+            onClick={() => setLocalReload((k) => k + 1)}
             className="flex size-6 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-200"
             aria-label="reload"
           >
@@ -145,7 +140,7 @@ function VirtualWebView({
           }}
         >
           <iframe
-            key={`${url}-${reloadKey}`}
+            key={viewKey}
             src={url}
             title={title}
             className="border-0 bg-white"

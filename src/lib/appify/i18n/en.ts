@@ -694,7 +694,7 @@ export const en: Dict = {
       running: "Running",
       interrupted: "Interrupted",
       download: "Download",
-      downloadNote: "The download button exports a real ZIP configuration package (manifest, Gradle, WebView shell, JS bridge, icon) without touching the saved app; the final binary is simulated in this demo environment.",
+      downloadNote: "Android APK builds produce a real signed installable file for any phone (on first install allow \"unknown sources\", then open the file from your file manager). AAB and IPA outputs download the ZIP configuration package (manifest, Gradle, native shell, JS bridge, icon) for rebuilding in a cloud Gradle/Xcode environment — without touching the saved app.",
       publishTitle: "Publishing steps for the stores",
       playSteps: [
         "Create a Google Play Developer account ($25 once).",
@@ -863,5 +863,7 @@ export const en: Dict = {
     testIdsApplied: "Official AdMob test IDs applied",
     zipReady: "Configuration package downloaded — the app remains saved in the dashboard",
     zipFailed: "Could not prepare the package — please try again",
+    apkReady: "Signed APK is ready — install it directly on your phone",
+    apkFailed: "APK build failed — try again or use the configuration package",
   },
 };
