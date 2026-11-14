@@ -24,6 +24,7 @@ export const en: Dict = {
     copied: "Copied",
     loading: "Loading…",
     retry: "Retry",
+    attribution: "This platform is developed by Yahya Masoud",
     open: "Open",
     preview: "Preview",
     livePreview: "Live Preview",

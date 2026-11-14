@@ -22,6 +22,7 @@ export const ar = {
     copied: "تم النسخ",
     loading: "جارٍ التحميل…",
     retry: "إعادة المحاولة",
+    attribution: "المنصة من تطوير يحي مسعود",
     open: "فتح",
     preview: "معاينة",
     livePreview: "معاينة حية",

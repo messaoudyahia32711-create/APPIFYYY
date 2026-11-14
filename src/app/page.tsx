@@ -38,6 +38,20 @@ function AppifyApp() {
     );
   }
 
+  return (
+    <>
+      {renderView(route)}
+      {/* developer attribution — shown at the bottom of every view */}
+      <footer className="border-t border-border/70 bg-card/60">
+        <div className="mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-4 text-center text-[13px] text-muted-foreground md:px-6">
+          <span>{d.common.attribution}</span>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+function renderView(route: ReturnType<typeof useRoute>) {
   switch (route.view) {
     case "dashboard":
       return <DashboardPage />;
