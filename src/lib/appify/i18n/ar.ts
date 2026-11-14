@@ -431,6 +431,8 @@ export const ar = {
       popupsD: "فتح نوافذ الموقع المنبثقة داخل التطبيق",
       pullToRefresh: "السحب للتحديث",
       pullToRefreshD: "إيماءة السحب الأصلية لتحديث الصفحة",
+      addressBar: "شريط عنوان المتصفح",
+      addressBarD: "عرض رابط الصفحة أعلى محتوى الموقع — أوقفه لمظهر تطبيقي نظيف يملأ الشاشة بالكامل",
       gPrivacy: "الخصوصية والأمان",
       screenshotBlocking: "منع لقطات الشاشة",
       screenshotBlockingD: "حجب التقاط الشاشة في المحتوى الحساس",
@@ -740,7 +742,9 @@ export const ar = {
     toggleNav: "شريط التنقل",
     toggleFab: "الزر العائم",
     toggleAppBar: "الشريط العلوي",
+    toggleAddressBar: "شريط العنوان",
     openExternal: "فتح الموقع في تبويب",
+    reloadPage: "تحديث الصفحة",
     console: "سجل الجسر البرمجي JS Bridge",
     consoleEmpty: "ستظهر هنا أحداث الجسر البرمجي عند تجربتها",
     clear: "تفريغ",
@@ -858,6 +862,6 @@ export const ar = {
     zipReady: "تم تنزيل حزمة التكوين — التطبيق محفوظ في لوحة التحكم",
     zipFailed: "تعذّر تجهيز الحزمة — حاول مرة أخرى",
   },
-} as const;
+};
 
 export type Dict = typeof ar;

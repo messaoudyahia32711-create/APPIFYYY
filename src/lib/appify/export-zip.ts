@@ -133,6 +133,10 @@ class MainActivity : AppCompatActivity() {
             cacheMode = if (${app.settings.caching}) WebSettings.LOAD_DEFAULT else WebSettings.LOAD_NO_CACHE
         }
 
+        // Fullscreen native shell: the site fills the whole screen and the
+        // address bar stays hidden (app.settings.showAddressBar = ${app.settings.showAddressBar ?? false})
+        actionBar?.hide()
+
         WebView.setWebContentsDebuggingEnabled(false)
         webView.addJavascriptInterface(AppifyBridge(this), "AppifyBridge")
         webView.loadUrl("${app.url}")

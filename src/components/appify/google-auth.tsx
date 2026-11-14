@@ -87,7 +87,7 @@ function GoogleSignInModal({ open, onClose }: { open: boolean; onClose: () => vo
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const doSignIn = (user: AppifyUser) => {
+  const doSignIn = (user: Omit<AppifyUser, "provider">) => {
     signIn({ ...user, provider: "google" });
     toast({ title: d.auth.signedInToast });
     setStep("choose");

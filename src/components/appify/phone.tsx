@@ -64,7 +64,17 @@ export const METHOD_SIG: Record<BridgeMethodId, string> = {
  * scaled down to fit the phone screen, so the page lays out exactly like it
  * would on an actual device instead of being squeezed into ~300px.
  * ---------------------------------------------------------------- */
-function VirtualWebView({ url, title }: { url: string; title: string }) {
+function VirtualWebView({
+  url,
+  title,
+  showAddressBar,
+  reloadToken = 0,
+}: {
+  url: string;
+  title: string;
+  showAddressBar: boolean;
+  reloadToken?: number;
+}) {
   const pageRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ w: number; h: number }>({ w: 304, h: 460 });
   const [reloadKey, setReloadKey] = useState(0);
@@ -73,6 +83,11 @@ function VirtualWebView({ url, title }: { url: string; title: string }) {
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const viewKey = `${url}-${reloadKey}`;
   const loading = loadedKey !== viewKey;
+
+  // external reload requests (toolbar button) bump the internal reload counter
+  useEffect(() => {
+    if (reloadToken > 0) setReloadKey((k) => k + 1);
+  }, [reloadToken]);
 
   useEffect(() => {
     const el = pageRef.current;
@@ -99,20 +114,23 @@ function VirtualWebView({ url, title }: { url: string; title: string }) {
 
   return (
     <div className="absolute inset-0 flex flex-col bg-white">
-      {/* in-app browser chrome */}
-      <div className="flex items-center gap-1.5 border-b border-gray-200 bg-[#f1f3f4] px-2.5 py-1.5" dir="ltr">
-        <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-[0_1px_2px_rgba(0,0,0,0.08)]">
-          <Lock className="size-3 shrink-0 text-emerald-600" />
-          <span className="truncate text-[11px] font-medium text-gray-600">{url.replace(/^https?:\/\//, "")}</span>
-        </span>
-        <button
-          onClick={() => setReloadKey((k) => k + 1)}
-          className="flex size-6 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-200"
-          aria-label="reload"
-        >
-          <RotateCcw className="size-3.5" />
-        </button>
-      </div>
+      {/* in-app browser chrome — optional: off by default for a clean,
+          fullscreen native-app look (toggle it from App Settings) */}
+      {showAddressBar && (
+        <div className="flex items-center gap-1.5 border-b border-gray-200 bg-[#f1f3f4] px-2.5 py-1.5" dir="ltr">
+          <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-[0_1px_2px_rgba(0,0,0,0.08)]">
+            <Lock className="size-3 shrink-0 text-emerald-600" />
+            <span className="truncate text-[11px] font-medium text-gray-600">{url.replace(/^https?:\/\//, "")}</span>
+          </span>
+          <button
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="flex size-6 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-200"
+            aria-label="reload"
+          >
+            <RotateCcw className="size-3.5" />
+          </button>
+        </div>
+      )}
       {/* scaled page area */}
       <div ref={pageRef} className="relative flex-1 overflow-hidden">
         <div
@@ -152,6 +170,7 @@ export function usePhoneState(app: AppRecord | undefined) {
   const pushBridgeEvent = useAppifyStore((s) => s.pushBridgeEvent);
   const pendingBridgeDemo = useAppifyStore((s) => s.pendingBridgeDemo);
   const clearPendingBridgeDemo = useAppifyStore((s) => s.clearPendingBridgeDemo);
+  const updateApp = useAppifyStore((s) => s.updateApp);
 
   const [device, setDevice] = useState<"pixel" | "iphone">("pixel");
   const [splashKey, setSplashKey] = useState(0);
@@ -159,6 +178,7 @@ export function usePhoneState(app: AppRecord | undefined) {
   const [showNav, setShowNav] = useState(true);
   const [showFab, setShowFab] = useState(true);
   const [showAppBar, setShowAppBar] = useState(true);
+  const [webViewReloadToken, setWebViewReloadToken] = useState(0);
   const [samplePage, setSamplePage] = useState<StorePage>(() => (app ? (samplePageFromUrl(app.url) as StorePage) : "home"));
   const [currentUrl, setCurrentUrl] = useState<string>(() => app?.url ?? "");
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -253,6 +273,19 @@ export function usePhoneState(app: AppRecord | undefined) {
     setSplashKey((k) => k + 1);
   };
 
+  const reloadWebView = useCallback(() => setWebViewReloadToken((t) => t + 1), []);
+
+  // persisted setting — hides/shows the browser URL chrome on top of the site
+  const toggleAddressBar = useCallback(() => {
+    if (!app) return;
+    const next = !(app.settings.showAddressBar ?? false);
+    updateApp(app.id, (a) => ({
+      ...a,
+      settings: { ...a.settings, showAddressBar: next },
+      updatedAt: Date.now(),
+    }));
+  }, [app, updateApp]);
+
   const scopedCss = app && isSample ? scopeCss(app.customCode.css, "appify-store-root") : "";
 
   const nav = app?.navigation;
@@ -268,6 +301,9 @@ export function usePhoneState(app: AppRecord | undefined) {
     device, setDevice,
     splashVisible, replaySplash,
     showNav, setShowNav, showFab, setShowFab, showAppBar, setShowAppBar,
+    webViewReloadToken, reloadWebView,
+    addressBarOn: (app?.settings.showAddressBar ?? false) === true,
+    toggleAddressBar,
     samplePage, currentUrl, drawerOpen, setDrawerOpen,
     signedIn, setSignedIn,
     phoneToast,
@@ -333,13 +369,18 @@ export function PhoneFrame({ app, state, className }: { app: AppRecord; state: P
                     onBridge={state.handleStoreBridge}
                     appBg={style.appBgColor}
                     signedIn={state.signedIn || !!siteUser}
-                    onSignIn={state.setSignedIn}
+                    onSignIn={(name) => state.setSignedIn(name !== null)}
                     siteUser={siteUser}
                   />
                 </div>
               ) : (
                 <div className="relative h-full" id="phone-screen">
-                  <VirtualWebView url={state.currentUrl} title={app.name} />
+                  <VirtualWebView
+                    url={state.currentUrl}
+                    title={app.name}
+                    showAddressBar={(app.settings.showAddressBar ?? false) === true}
+                    reloadToken={state.webViewReloadToken}
+                  />
                 </div>
               )}
 

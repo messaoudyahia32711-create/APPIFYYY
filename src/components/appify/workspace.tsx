@@ -20,6 +20,7 @@ import {
   Eye,
   SearchX,
   RotateCcw,
+  PanelTop,
   Sparkles,
   ChevronDown,
 } from "lucide-react";
@@ -300,6 +301,18 @@ export function WorkspacePage({ appId, tab }: { appId: string; tab: string }) {
                       </button>
                     ))}
                   </div>
+                  {!phone.isSample && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={cn("size-7 rounded-lg border-border", phone.addressBarOn ? "bg-accent" : "bg-card")}
+                      onClick={phone.toggleAddressBar}
+                      aria-label={d.preview.toggleAddressBar}
+                      title={d.preview.toggleAddressBar}
+                    >
+                      <PanelTop className={cn("size-3.5", phone.addressBarOn ? "text-primary" : "text-muted-foreground")} />
+                    </Button>
+                  )}
                   <Button variant="outline" size="icon" className="size-7 rounded-lg border-border bg-card" onClick={phone.replaySplash} aria-label={d.preview.replaySplash}>
                     <RotateCcw className="size-3.5 text-primary" />
                   </Button>

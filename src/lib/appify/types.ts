@@ -3,6 +3,7 @@ export type NavItem = { id: string; label: string; url: string; icon: string };
 export type DrawerItem = { id: string; label: string; url: string; icon: string };
 
 export type AppSettings = {
+  showAddressBar: boolean;
   zoom: boolean;
   textSelection: boolean;
   popups: boolean;

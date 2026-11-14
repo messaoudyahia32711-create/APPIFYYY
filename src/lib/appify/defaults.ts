@@ -22,6 +22,9 @@ export function uid(): string {
 
 export function defaultSettings(): AppSettings {
   return {
+    // URL chrome is OFF by default: the site fills the whole screen like a
+    // real native app (users can re-enable the address bar in App Settings)
+    showAddressBar: false,
     zoom: true,
     textSelection: true,
     popups: false,

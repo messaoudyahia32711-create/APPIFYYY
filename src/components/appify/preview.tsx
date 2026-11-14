@@ -15,6 +15,7 @@ import {
   Bell,
   Trash2,
   RotateCcw,
+  RefreshCcw,
   ExternalLink,
   Info,
   Globe,
@@ -92,9 +93,9 @@ export function PreviewPage({ appId }: { appId: string }) {
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 items-start gap-8 px-4 py-7 md:px-6 lg:grid-cols-[auto_minmax(0,1fr)]">
+      <main className="mx-auto grid w-full max-w-6xl flex-1 items-start gap-8 px-4 py-7 md:px-6 lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
         {/* ===== phone column ===== */}
-        <div className="mx-auto space-y-4">
+        <div className="mx-auto w-full max-w-[430px] space-y-4">
           {/* toolbar */}
           <div className="flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-border bg-card px-3.5 py-3 shadow-soft">
             <div className="flex rounded-xl bg-muted p-1" role="group" aria-label={d.preview.device}>
@@ -120,6 +121,12 @@ export function PreviewPage({ appId }: { appId: string }) {
               <RotateCcw className="size-3.5 text-primary" />
               {d.preview.replaySplash}
             </Button>
+            {!state.isSample && (
+              <Button variant="outline" size="sm" onClick={state.reloadWebView} className="rounded-lg border-border bg-card text-xs">
+                <RefreshCcw className="size-3.5 text-primary" />
+                {d.preview.reloadPage}
+              </Button>
+            )}
             {(
               [
                 { on: state.showNav, set: state.setShowNav, label: d.preview.toggleNav },
@@ -138,6 +145,18 @@ export function PreviewPage({ appId }: { appId: string }) {
                 {t.label}
               </button>
             ))}
+            {!state.isSample && (
+              <button
+                onClick={state.toggleAddressBar}
+                title={d.preview.toggleAddressBar}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
+                  state.addressBarOn ? "bg-accent text-primary" : "bg-muted text-muted-foreground line-through",
+                )}
+              >
+                {d.preview.toggleAddressBar}
+              </button>
+            )}
             {!state.isSample && (
               <Button variant="outline" size="sm" onClick={() => window.open(state.currentUrl, "_blank")} className="rounded-lg border-border bg-card text-xs">
                 <ExternalLink className="size-3.5" />

@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { AppRecord, BridgeEvent, BuildRecord, NotificationItem } from "./types";
+import type { AppRecord, AppSettings, BridgeEvent, BuildRecord, NotificationItem } from "./types";
 import { createDemoApp, uid } from "./defaults";
 
 type AppifyState = {
@@ -105,7 +105,20 @@ export const useAppifyStore = create<AppifyState>()(
     }),
     {
       name: "appify-store-v1",
+      version: 2,
       storage: createJSONStorage(() => localStorage),
+      // v2: fill `showAddressBar` (default false) into records saved before the
+      // field existed, so every app has a complete settings object
+      migrate: (persisted) => {
+        const state = persisted as AppifyState;
+        if (Array.isArray(state.apps)) {
+          state.apps = state.apps.map((a) => ({
+            ...a,
+            settings: { showAddressBar: false, ...(a.settings as Partial<AppSettings>) } as AppSettings,
+          }));
+        }
+        return state as AppifyState;
+      },
       partialize: (state) => ({
         apps: state.apps,
         seeded: state.seeded,

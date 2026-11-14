@@ -18,6 +18,7 @@ import {
   Vibrate,
   ScanLine,
   Link2,
+  PanelTop,
   Plus,
   X,
 } from "lucide-react";
@@ -58,6 +59,13 @@ export function SettingsPanel({ app }: { app: AppRecord }) {
     <div className="space-y-5">
       <SectionCard title={d.p.settings.gInteractions} desc={d.p.settings.gInteractionsD} icon={<RefreshCcw className="size-4.5" />}>
         <div className="grid gap-3 lg:grid-cols-2">
+          <ToggleRow
+            label={d.p.settings.addressBar}
+            desc={d.p.settings.addressBarD}
+            checked={app.settings.showAddressBar ?? false}
+            onChange={(v) => set("showAddressBar", v)}
+            icon={<PanelTop className="size-4" />}
+          />
           <ToggleRow label={d.p.settings.zoom} desc={d.p.settings.zoomD} checked={app.settings.zoom} onChange={(v) => set("zoom", v)} icon={<ZoomIn className="size-4" />} />
           <ToggleRow label={d.p.settings.textSelection} desc={d.p.settings.textSelectionD} checked={app.settings.textSelection} onChange={(v) => set("textSelection", v)} icon={<TextCursorInput className="size-4" />} />
           <ToggleRow label={d.p.settings.popups} desc={d.p.settings.popupsD} checked={app.settings.popups} onChange={(v) => set("popups", v)} icon={<AppWindow className="size-4" />} />
