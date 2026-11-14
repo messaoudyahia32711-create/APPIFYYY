@@ -248,6 +248,12 @@ def write_manifest(build_dir: str, cfg: dict, pkg: str, name: str, ver_name: str
         f'    package="{pkg}"\n'
         f'    android:versionCode="{ver_code}"\n'
         f'    android:versionName="{esc_xml(ver_name)}">\n\n'
+        # Modern SDK contract: Android 14+ (API 34) REFUSES to install apps
+        # whose targetSdkVersion < 23 ("built for an older version of Android").
+        # Without this element aapt2 would default to targetSdk=1 (Android 1.0).
+        '    <uses-sdk\n'
+        '        android:minSdkVersion="24"\n'
+        '        android:targetSdkVersion="34"/>\n\n'
         + "\n".join(perms)
         + f'\n\n    <application\n        android:label="@string/app_name"\n'
         '        android:icon="@mipmap/ic_launcher"\n'
@@ -1229,6 +1235,8 @@ def build(config_path: str, out_path: str) -> dict:
         base_apk = os.path.join(work, "base.apk")
         run([AAPT2, "link", "-o", base_apk, "-I", ANDROID_JAR,
              "--manifest", os.path.join(work, "AndroidManifest.xml"),
+             "--min-sdk-version", "24",
+             "--target-sdk-version", "34",
              "-A", os.path.join(work, "assets"),
              "--java", gen_dir, "--auto-add-overlay", res_zip])
 
@@ -1261,7 +1269,7 @@ def build(config_path: str, out_path: str) -> dict:
             z.write(os.path.join(dex_dir, "classes.dex"), "classes.dex")
 
         aligned = os.path.join(work, "aligned.apk")
-        run([os.path.join(SDK, "build-tools", "zipalign"), "-f", "4", base_apk, aligned])
+        run([os.path.join(SDK, "build-tools", "zipalign"), "-f", "-p", "4", base_apk, aligned])
 
         final_tmp = out_path + ".part"
         run([os.path.join(SDK, "build-tools", "apksigner"), "sign",

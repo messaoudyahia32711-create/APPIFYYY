@@ -80,7 +80,8 @@ export function BuildPanel({ app }: { app: AppRecord }) {
         let artifact = apkArtifacts[b.id];
         if (!artifact || !artifact.url) {
           // blobs die on page reload — rebuild on demand, then cache again
-          artifact = await requestRealApk(b);
+          const rebuilt = await requestRealApk(b);
+          if (rebuilt && rebuilt.url) artifact = rebuilt;
         }
         if (!artifact || !artifact.url) throw new Error("apk build failed");
         const a = document.createElement("a");
@@ -283,6 +284,15 @@ export function BuildPanel({ app }: { app: AppRecord }) {
             </RadioGroup>
           </div>
         </div>
+
+        {platform === "android" && (
+          <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-primary/20 bg-primary/[0.06] px-4 py-3">
+            <ShieldCheck className="size-4.5 shrink-0 text-primary" />
+            <p className="text-xs font-semibold leading-relaxed text-primary" dir="ltr">
+              {d.p.build.compatAndroid}
+            </p>
+          </div>
+        )}
 
         <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-muted/60 pt-5">
           <div className="flex flex-wrap items-center gap-2 text-sm">
