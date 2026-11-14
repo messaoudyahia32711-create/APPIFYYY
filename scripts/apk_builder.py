@@ -143,6 +143,12 @@ def make_icons(res_dir: str, icon_dataurl, name: str):
             "</adaptive-icon>\n"
         )
 
+    # plain PNG for the splash windowBackground — a <bitmap> element must
+    # never reference the adaptive-icon XML (crashes on some Android builds)
+    nd = os.path.join(res_dir, "drawable-nodpi")
+    os.makedirs(nd, exist_ok=True)
+    icon_img.resize((160, 160), Image.LANCZOS).save(os.path.join(nd, "splash_icon.png"))
+
 
 # ------------------------------------------------------------------ res ---
 def write_res(res_dir: str, cfg: dict, pkg: str, name: str, orient: str):
@@ -185,7 +191,7 @@ def write_res(res_dir: str, cfg: dict, pkg: str, name: str, orient: str):
             '<layer-list xmlns:android="http://schemas.android.com/apk/res/android">\n'
             '    <item android:drawable="@color/splashBg"/>\n'
             '    <item android:gravity="center">\n'
-            '        <bitmap android:src="@mipmap/ic_launcher" android:gravity="center"/>\n'
+            '        <bitmap android:src="@drawable/splash_icon" android:gravity="center"/>\n'
             "    </item>\n"
             "</layer-list>\n"
         )
@@ -288,6 +294,8 @@ def write_java(build_dir: str, cfg: dict):
         f.write(JAVA_MAIN)
     with open(os.path.join(src, "AppifyBridge.java"), "w", encoding="utf-8") as f:
         f.write(JAVA_BRIDGE)
+    with open(os.path.join(src, "AppifyMessagingService.java"), "w", encoding="utf-8") as f:
+        f.write(JAVA_SERVICE)
 
 
 def write_assets(build_dir: str, cfg: dict):
@@ -380,13 +388,65 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        loadConfig();
-        applyWindowFlags();
-        buildUi();
-        setupWebView();
-        String viaLink = getIntentDeepLink();
-        webView.loadUrl(viaLink != null ? viaLink : startUrl);
-        requestNeededPermissions();
+        try {
+            loadConfig();
+            applyWindowFlags();
+            buildUi();
+            setupWebView();
+            String viaLink = getIntentDeepLink();
+            webView.loadUrl(viaLink != null ? viaLink : startUrl);
+            if (cfg.optBoolean("hasNotifications", false)) {
+                AppifyMessagingService.ensureChannel(this);
+            }
+            requestNeededPermissions();
+        } catch (Throwable t) {
+            // never close silently — show a diagnostic screen instead
+            showFatalScreen(t);
+        }
+    }
+
+    void showFatalScreen(Throwable t) {
+        try {
+            android.util.Log.e("AppifyCrash", "startup failure", t);
+            LinearLayout fb = new LinearLayout(this);
+            fb.setOrientation(LinearLayout.VERTICAL);
+            fb.setGravity(Gravity.CENTER);
+            fb.setBackgroundColor(Color.WHITE);
+            fb.setPadding(dp(28), dp(28), dp(28), dp(28));
+            TextView ic = new TextView(this);
+            ic.setText("⚠️");
+            ic.setTextSize(38);
+            ic.setGravity(Gravity.CENTER);
+            fb.addView(ic, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            TextView t1 = new TextView(this);
+            t1.setText("تعذر فتح التطبيق");
+            t1.setTextSize(16);
+            t1.setTypeface(Typeface.DEFAULT_BOLD);
+            t1.setGravity(Gravity.CENTER);
+            fb.addView(t1, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            TextView t2 = new TextView(this);
+            t2.setText(t == null ? "unknown"
+                    : t.getClass().getSimpleName() + ": " + (t.getMessage() == null ? "" : t.getMessage()));
+            t2.setTextSize(11);
+            t2.setTextColor(Color.parseColor("#6B7280"));
+            t2.setGravity(Gravity.CENTER);
+            fb.addView(t2, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            android.widget.Button retry = new android.widget.Button(this);
+            retry.setText("إعادة المحاولة");
+            retry.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) {
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                }
+            });
+            fb.addView(retry, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            setContentView(fb);
+        } catch (Throwable ignored) {
+            finish();
+        }
     }
 
     /* ------------------------------------------------------------ config */
@@ -1114,6 +1174,75 @@ public class AppifyBridge {
 }"""
 
 
+JAVA_SERVICE = r"""package __PACKAGE__;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import android.os.IBinder;
+
+/**
+ * Appify — lightweight in-app notification service (framework-only).
+ * The class is declared in the manifest, so it MUST exist in the dex;
+ * some OEM Android builds validate components at first launch.
+ */
+public class AppifyMessagingService extends Service {
+
+    public static final String CHANNEL_ID = "appify_general";
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        String title = intent == null ? "" : intent.getStringExtra("title");
+        String body = intent == null ? "" : intent.getStringExtra("body");
+        showNotification(this, title, body);
+        return START_NOT_STICKY;
+    }
+
+    public static void ensureChannel(Context ctx) {
+        if (Build.VERSION.SDK_INT < 26) return;
+        try {
+            NotificationManager nm =
+                (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null && nm.getNotificationChannel(CHANNEL_ID) == null) {
+                NotificationChannel ch = new NotificationChannel(
+                    CHANNEL_ID, "General", NotificationManager.IMPORTANCE_DEFAULT);
+                ch.setDescription("Appify notifications");
+                nm.createNotificationChannel(ch);
+            }
+        } catch (Exception ignored) { }
+    }
+
+    public static void showNotification(Context ctx, String title, String body) {
+        try {
+            ensureChannel(ctx);
+            NotificationManager nm =
+                (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null) return;
+            Notification.Builder b = Build.VERSION.SDK_INT >= 26
+                ? new Notification.Builder(ctx, CHANNEL_ID)
+                : new Notification.Builder(ctx);
+            int icon = ctx.getApplicationInfo().icon;
+            b.setSmallIcon(icon != 0 ? icon : android.R.drawable.ic_dialog_info)
+                .setContentTitle(title == null || title.length() == 0
+                    ? ctx.getString(ctx.getApplicationInfo().labelRes)
+                    : title)
+                .setContentText(body == null ? "" : body)
+                .setAutoCancel(true);
+            nm.notify((int) System.currentTimeMillis() % 100000, b.build());
+        } catch (Exception ignored) { }
+    }
+}"""
+
+
 # -------------------------------------------------------------- build ---
 class BuildError(Exception):
     pass
@@ -1214,7 +1343,7 @@ def build(config_path: str, out_path: str) -> dict:
         write_manifest(work, cfg, pkg, name, ver_name, ver_code)
 
         # patch package name into java sources
-        for jf in ("MainActivity.java", "AppifyBridge.java"):
+        for jf in ("MainActivity.java", "AppifyBridge.java", "AppifyMessagingService.java"):
             p = os.path.join(work, "src", jf)
             with open(p, encoding="utf-8") as f:
                 src = f.read()
