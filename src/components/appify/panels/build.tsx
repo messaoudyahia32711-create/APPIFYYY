@@ -24,6 +24,7 @@ import { useLang } from "@/lib/appify/i18n";
 import { useAppifyStore } from "@/lib/appify/store";
 import { toast } from "@/hooks/use-toast";
 import { formatTime, isSampleUrl } from "@/lib/appify/defaults";
+import { downloadBuildPackage } from "@/lib/appify/export-zip";
 import type { AppRecord, BuildOutput, BuildPlatform, BuildRecord } from "@/lib/appify/types";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [runningId, setRunningId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const intervalRef = useRef<number | null>(null);
 
   // normalize builds left "running" by a previous session
@@ -61,6 +63,21 @@ export function BuildPanel({ app }: { app: AppRecord }) {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
   }, []);
+
+  /* Download the configuration package. Read-only: it never mutates or
+   * deletes the app — the record stays intact in the dashboard. */
+  const handleDownload = async (b: BuildRecord) => {
+    if (downloadingId) return;
+    setDownloadingId(b.id);
+    try {
+      await downloadBuildPackage(app, b, lang);
+      toast({ title: d.toast.zipReady });
+    } catch {
+      toast({ title: d.toast.zipFailed, variant: "destructive" });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const startBuild = () => {
     if (busy) return;
@@ -349,8 +366,18 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                     {b.status === "success" ? d.p.build.success : b.status === "failed" ? d.p.build.failed : d.p.build.running}
                   </span>
                   {b.status === "success" && (
-                    <Button variant="outline" size="sm" className="rounded-lg border-border bg-card" disabled>
-                      <Download className="size-3.5" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownload(b)}
+                      disabled={downloadingId === b.id}
+                      className="rounded-lg border-border bg-card"
+                    >
+                      {downloadingId === b.id ? (
+                        <Loader2 className="size-3.5 animate-spin text-primary" />
+                      ) : (
+                        <Download className="size-3.5 text-primary" />
+                      )}
                       {d.p.build.download}
                     </Button>
                   )}

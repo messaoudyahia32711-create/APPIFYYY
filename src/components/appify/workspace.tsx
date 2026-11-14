@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppifyLogo, AppIconBadge, LangToggle } from "./ui";
+import { GoogleAuthButton } from "./google-auth";
 import { PhoneFrame, usePhoneState } from "./phone";
 import { useLang } from "@/lib/appify/i18n";
 import { navigate } from "@/lib/appify/router";
@@ -199,6 +200,7 @@ export function WorkspacePage({ appId, tab }: { appId: string; tab: string }) {
             </Button>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <GoogleAuthButton />
             <LangToggle />
             <Button
               onClick={() => setPreviewOpen((v) => !v)}

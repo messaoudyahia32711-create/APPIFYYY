@@ -201,7 +201,7 @@ export function WizardPage() {
               <LabeledField label={d.wizard.urlLabel} hint={d.wizard.urlHint}>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <div className="relative flex-1">
-                    <Globe className="absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground ltr:left-3 rtl:right-3" />
+                    <Globe className="absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground start-3" />
                     <Input
                       value={url}
                       onChange={(e) => {

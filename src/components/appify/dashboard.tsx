@@ -45,6 +45,8 @@ import {
   EmptyState,
   StatCard,
 } from "./ui";
+import { GoogleAuthButton } from "./google-auth";
+import { useAuthStore } from "@/lib/appify/auth";
 import { useLang } from "@/lib/appify/i18n";
 import { useAppifyStore } from "@/lib/appify/store";
 import { navigate } from "@/lib/appify/router";
@@ -58,6 +60,7 @@ export function DashboardPage() {
   const apps = useAppifyStore((s) => s.apps);
   const createApp = useAppifyStore((s) => s.createApp);
   const deleteApp = useAppifyStore((s) => s.deleteApp);
+  const siteUser = useAuthStore((s) => s.user);
   const [toDelete, setToDelete] = useState<string | null>(null);
 
   const totalBuilds = apps.reduce((acc, a) => acc + a.builds.filter((b) => b.status === "success").length, 0);
@@ -103,6 +106,7 @@ export function DashboardPage() {
             <AppifyLogo />
           </button>
           <div className="flex items-center gap-2.5">
+            <GoogleAuthButton />
             <LangToggle />
             <Button onClick={() => navigate("#/new")} className="rounded-xl bg-primary font-bold text-primary-foreground hover:bg-primary/90">
               <Plus className="size-4" />
@@ -115,7 +119,15 @@ export function DashboardPage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 md:px-6 md:py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold md:text-[28px]">{d.dash.hello}</h1>
+            <h1 className="text-2xl font-bold md:text-[28px]">
+              {siteUser ? (
+                <>
+                  {d.auth.welcome} <span className="text-primary">{siteUser.name}</span>
+                </>
+              ) : (
+                d.dash.hello
+              )}
+            </h1>
             <p className="mt-1.5 text-sm text-muted-foreground md:text-[15px]">{d.dash.subtitle}</p>
           </div>
           <span className="flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-soft">

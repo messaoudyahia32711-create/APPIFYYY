@@ -692,7 +692,7 @@ export const en: Dict = {
       running: "Running",
       interrupted: "Interrupted",
       download: "Download",
-      downloadNote: "In this demo environment the final artifact is simulated; the real plan delivers a signed file ready for store upload.",
+      downloadNote: "The download button exports a real ZIP configuration package (manifest, Gradle, WebView shell, JS bridge, icon) without touching the saved app; the final binary is simulated in this demo environment.",
       publishTitle: "Publishing steps for the stores",
       playSteps: [
         "Create a Google Play Developer account ($25 once).",
@@ -821,6 +821,31 @@ export const en: Dict = {
     orderPlaced: "Order #4821 is being prepared",
   },
 
+  auth: {
+    signInGoogle: "Sign in with Google",
+    signInShort: "Sign in",
+    title: "Sign in with Google",
+    subtitle: "to continue to Appify",
+    chooseAccount: "Choose an account",
+    useOther: "Use another account",
+    nameLabel: "Full name",
+    namePh: "e.g. Sara Mohammed",
+    emailLabel: "Gmail address",
+    emailPh: "example@gmail.com",
+    emailInvalid: "Enter a valid email address",
+    nameRequired: "Enter a name to display on your account",
+    continueBtn: "Continue",
+    backToAccounts: "Back to accounts",
+    signedInToast: "Signed in — account linked to Google",
+    signedOutToast: "Signed out",
+    signOut: "Sign out",
+    myAccount: "My account",
+    gotoDash: "Dashboard",
+    demoNote: "Demo environment: simulated locally in your browser — no data is sent to Google",
+    welcome: "Welcome,",
+    linkedNote: "The app is linked to your Google account",
+  },
+
   toast: {
     saved: "Changes saved successfully",
     appCreated: "App created successfully",
@@ -832,5 +857,7 @@ export const en: Dict = {
     langSwitched: "Switched to English",
     keystoreReady: "Signing key generated",
     testIdsApplied: "Official AdMob test IDs applied",
+    zipReady: "Configuration package downloaded — the app remains saved in the dashboard",
+    zipFailed: "Could not prepare the package — please try again",
   },
 };

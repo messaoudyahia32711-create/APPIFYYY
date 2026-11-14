@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Fingerprint } from "lucide-react";
+import { Fingerprint, Lock, RotateCcw, Loader2 } from "lucide-react";
 import { AppIconBadge } from "./ui";
 import { SampleStore, type StorePage } from "./sample-store";
 import { useLang } from "@/lib/appify/i18n";
 import { useAppifyStore } from "@/lib/appify/store";
+import { useAuthStore } from "@/lib/appify/auth";
 import { getIcon } from "@/lib/appify/icons";
 import { isSampleUrl, samplePageFromUrl } from "@/lib/appify/defaults";
 import type { AppRecord } from "@/lib/appify/types";
@@ -57,6 +58,93 @@ export const METHOD_SIG: Record<BridgeMethodId, string> = {
   cartAdd: "AppifyBridge.logAnalyticsEvent('add_to_cart') + vibrate(30)",
   cartPay: "AppifyBridge.logAnalyticsEvent('purchase')",
 };
+
+/* ---------- virtual mobile viewport for external websites ----------
+ * Renders the site inside a real mobile-class viewport (390 CSS px wide)
+ * scaled down to fit the phone screen, so the page lays out exactly like it
+ * would on an actual device instead of being squeezed into ~300px.
+ * ---------------------------------------------------------------- */
+function VirtualWebView({ url, title }: { url: string; title: string }) {
+  const pageRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<{ w: number; h: number }>({ w: 304, h: 460 });
+  const [reloadKey, setReloadKey] = useState(0);
+  // loading is derived: the spinner shows until the iframe reports "load"
+  // (or a safety timeout fires for sites that refuse to be framed)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const viewKey = `${url}-${reloadKey}`;
+  const loading = loadedKey !== viewKey;
+
+  useEffect(() => {
+    const el = pageRef.current;
+    if (!el) return;
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      if (r.width > 40 && r.height > 40) setBox({ w: r.width, h: r.height });
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // safety: hide the spinner even if a site blocks framing (X-Frame-Options)
+  useEffect(() => {
+    const t = window.setTimeout(() => setLoadedKey(viewKey), 4500);
+    return () => window.clearTimeout(t);
+  }, [viewKey]);
+
+  const VW = 390; // virtual viewport width — matches a Pixel-class Android device
+  const scale = box.w / VW;
+  const vh = Math.max(420, Math.round(box.h / scale));
+
+  return (
+    <div className="absolute inset-0 flex flex-col bg-white">
+      {/* in-app browser chrome */}
+      <div className="flex items-center gap-1.5 border-b border-gray-200 bg-[#f1f3f4] px-2.5 py-1.5" dir="ltr">
+        <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-[0_1px_2px_rgba(0,0,0,0.08)]">
+          <Lock className="size-3 shrink-0 text-emerald-600" />
+          <span className="truncate text-[11px] font-medium text-gray-600">{url.replace(/^https?:\/\//, "")}</span>
+        </span>
+        <button
+          onClick={() => setReloadKey((k) => k + 1)}
+          className="flex size-6 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-200"
+          aria-label="reload"
+        >
+          <RotateCcw className="size-3.5" />
+        </button>
+      </div>
+      {/* scaled page area */}
+      <div ref={pageRef} className="relative flex-1 overflow-hidden">
+        <div
+          style={{
+            width: VW,
+            height: vh,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        >
+          <iframe
+            key={`${url}-${reloadKey}`}
+            src={url}
+            title={title}
+            className="border-0 bg-white"
+            style={{ width: VW, height: vh }}
+            referrerPolicy="no-referrer"
+            onLoad={() => setLoadedKey(viewKey)}
+          />
+        </div>
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white">
+            <Loader2 className="size-5 animate-spin text-gray-300" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 /* ---------- shared phone state ---------- */
 export function usePhoneState(app: AppRecord | undefined) {
@@ -195,6 +283,7 @@ export type PhoneState = ReturnType<typeof usePhoneState>;
 /* ---------- the phone itself ---------- */
 export function PhoneFrame({ app, state, className }: { app: AppRecord; state: PhoneState; className?: string }) {
   const { d, lang } = state;
+  const siteUser = useAuthStore((s) => s.user);
   const nav = state.nav;
   const style = state.style;
   if (!nav || !style) return null;
@@ -243,18 +332,15 @@ export function PhoneFrame({ app, state, className }: { app: AppRecord; state: P
                     onNavigate={state.handleStoreNav}
                     onBridge={state.handleStoreBridge}
                     appBg={style.appBgColor}
-                    signedIn={state.signedIn}
+                    signedIn={state.signedIn || !!siteUser}
                     onSignIn={state.setSignedIn}
+                    siteUser={siteUser}
                   />
                 </div>
               ) : (
-                <iframe
-                  key={state.currentUrl}
-                  src={state.currentUrl}
-                  title={app.name}
-                  className="h-full w-full border-0 bg-white"
-                  referrerPolicy="no-referrer"
-                />
+                <div className="relative h-full" id="phone-screen">
+                  <VirtualWebView url={state.currentUrl} title={app.name} />
+                </div>
               )}
 
               {/* splash overlay */}
@@ -322,7 +408,7 @@ export function PhoneFrame({ app, state, className }: { app: AppRecord; state: P
               {nav.fabEnabled && state.showFab && (
                 <button
                   onClick={() => state.handleNavClick(nav.fabUrl)}
-                  className="absolute bottom-4 z-30 flex items-center justify-center rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform hover:scale-105 active:scale-95 ltr:right-4 rtl:left-4"
+                  className="absolute bottom-4 end-4 z-30 flex items-center justify-center rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform hover:scale-105 active:scale-95"
                   style={{ background: nav.fabColor, width: 52, height: 52 }}
                   aria-label={d.p.navigation.fab}
                 >

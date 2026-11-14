@@ -41,6 +41,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AppifyLogo, LangToggle } from "./ui";
+import { GoogleAuthButton } from "./google-auth";
 import { useLang } from "@/lib/appify/i18n";
 import { navigate } from "@/lib/appify/router";
 import { cn } from "@/lib/utils";
@@ -81,9 +82,11 @@ function Navbar() {
           ))}
         </nav>
         <div className="flex items-center gap-2.5">
+          <GoogleAuthButton />
           <LangToggle />
           <Button onClick={() => navigate("#/dashboard")} className="rounded-xl bg-primary font-bold text-primary-foreground hover:bg-primary/90">
-            {d.landing.nav.gotoDash}
+            <span className="hidden sm:inline">{d.landing.nav.gotoDash}</span>
+            <span className="sm:hidden">{d.landing.nav.gotoDash.slice(0, 6)}</span>
           </Button>
         </div>
       </div>

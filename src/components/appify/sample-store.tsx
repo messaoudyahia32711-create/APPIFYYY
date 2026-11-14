@@ -27,6 +27,7 @@ export function SampleStore({
   appBg,
   signedIn,
   onSignIn,
+  siteUser,
 }: {
   page: StorePage;
   onNavigate: (page: StorePage) => void;
@@ -34,6 +35,7 @@ export function SampleStore({
   appBg?: string;
   signedIn: boolean;
   onSignIn: (name: string | null) => void;
+  siteUser?: { name: string; email: string } | null;
 }) {
   const { d, lang } = useLang();
   const [cart, setCart] = useState<CartLine[]>([]);
@@ -43,6 +45,10 @@ export function SampleStore({
   const cartCount = cart.reduce((a, l) => a + l.qty, 0);
   const total = cart.reduce((a, l) => a + PRODUCT_PRICES[l.index] * l.qty, 0);
   const ArrowBack = lang === "ar" ? ChevronRight : ChevronLeft;
+  // the demo store is linked to the site-level Google account when one exists
+  const storeUser = siteUser
+    ? { name: siteUser.name, email: siteUser.email }
+    : { name: lang === "ar" ? "سارة" : "Sara", email: "sara@example.com" };
 
   const addToCart = (index: number) => {
     setCart((c) => {
@@ -141,7 +147,7 @@ export function SampleStore({
         {page === "shop" && (
           <div className="p-3.5">
             <div className="relative">
-              <Search className="absolute top-1/2 size-4 -translate-y-1/2 text-gray-400 ltr:left-3 rtl:right-3" />
+              <Search className="absolute top-1/2 size-4 -translate-y-1/2 text-gray-400 start-3" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -269,7 +275,7 @@ export function SampleStore({
                 <button
                   onClick={() => {
                     onBridge("google");
-                    setTimeout(() => onSignIn("sara@example.com"), 1100);
+                    setTimeout(() => onSignIn(storeUser.email), 1100);
                   }}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-800 shadow-sm"
                 >
@@ -291,11 +297,11 @@ export function SampleStore({
               <div className="mt-3 space-y-2.5">
                 <div className="flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
                   <span className="flex size-11 items-center justify-center rounded-full bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] font-display text-base font-extrabold text-white" aria-hidden="true">
-                    S
+                    {storeUser.name.trim()?.[0]?.toUpperCase() ?? "S"}
                   </span>
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">Sara</div>
-                    <div className="text-[11px] text-gray-500">{d.store.signedAs} sara@example.com</div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-bold text-gray-900">{storeUser.name}</div>
+                    <div className="truncate text-[11px] text-gray-500">{d.store.signedAs} {storeUser.email}</div>
                   </div>
                   <button onClick={() => onSignIn(null)} className="ms-auto text-gray-300 hover:text-red-500" aria-label="logout">
                     <LogOut className="size-4" />

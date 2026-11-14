@@ -690,7 +690,7 @@ export const ar = {
       running: "قيد التنفيذ",
       interrupted: "انقطع",
       download: "تنزيل",
-      downloadNote: "في هذه البيئة التجريبية يُحاكى الناتج النهائي؛ الخطة الفعلية تُسلّم ملفاً موقّعاً قابلاً للرفع على المتجر.",
+      downloadNote: "زر التنزيل يُنزّل حزمة تكوين ZIP حقيقية (البيان، Gradle، غلاف WebView، جسر JS، الأيقونة) دون أي تأثير على التطبيق المحفوظ؛ الملف الثنائي النهائي يُحاكى في هذه البيئة التجريبية.",
       publishTitle: "خطوات النشر على المتاجر",
       playSteps: [
         "أنشئ حساب Google Play Developer (25$ مرة واحدة).",
@@ -819,6 +819,31 @@ export const ar = {
     orderPlaced: "طلبك رقم #4821 قيد التجهيز",
   },
 
+  auth: {
+    signInGoogle: "تسجيل الدخول عبر Google",
+    signInShort: "تسجيل الدخول",
+    title: "تسجيل الدخول بحساب Google",
+    subtitle: "للمتابعة إلى Appify",
+    chooseAccount: "اختر حساباً",
+    useOther: "استخدام حساب آخر",
+    nameLabel: "الاسم الكامل",
+    namePh: "مثال: سارة محمد",
+    emailLabel: "عنوان Gmail",
+    emailPh: "example@gmail.com",
+    emailInvalid: "أدخل عنوان بريد إلكتروني صالحاً",
+    nameRequired: "أدخل الاسم لعرضه في حسابك",
+    continueBtn: "متابعة",
+    backToAccounts: "الرجوع إلى الحسابات",
+    signedInToast: "تم تسجيل الدخول وربط الحساب بـ Google",
+    signedOutToast: "تم تسجيل الخروج",
+    signOut: "تسجيل الخروج",
+    myAccount: "حسابي",
+    gotoDash: "لوحة التحكم",
+    demoNote: "بيئة تجريبية: تتم المحاكاة محلياً في متصفحك ولا تُرسل أي بيانات إلى Google",
+    welcome: "مرحباً،",
+    linkedNote: "التطبيق مرتبط بحساب Google الخاص بك",
+  },
+
   toast: {
     saved: "حُفظت التغييرات بنجاح",
     appCreated: "أُنشئ التطبيق بنجاح",
@@ -830,6 +855,8 @@ export const ar = {
     langSwitched: "تم التبديل إلى العربية",
     keystoreReady: "وُلّد مفتاح التوقيع",
     testIdsApplied: "طُبّقت معرّفات اختبار AdMob الرسمية",
+    zipReady: "تم تنزيل حزمة التكوين — التطبيق محفوظ في لوحة التحكم",
+    zipFailed: "تعذّر تجهيز الحزمة — حاول مرة أخرى",
   },
 } as const;
 
