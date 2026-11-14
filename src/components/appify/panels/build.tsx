@@ -161,7 +161,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                   key={o.v}
                   className={cn(
                     "flex cursor-pointer items-center justify-center gap-2 rounded-2xl border px-4 py-4 font-display text-sm font-bold transition-colors",
-                    platform === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 bg-white/[0.02] text-muted-foreground",
+                    platform === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground",
                   )}
                 >
                   <RadioGroupItem value={o.v} className="sr-only" />
@@ -185,7 +185,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                   key={o.v}
                   className={cn(
                     "flex cursor-pointer items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors",
-                    output === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 bg-white/[0.02] text-muted-foreground",
+                    output === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground",
                   )}
                 >
                   <RadioGroupItem value={o.v} className="sr-only" />
@@ -197,10 +197,10 @@ export function BuildPanel({ app }: { app: AppRecord }) {
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/6 pt-5">
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-muted/60 pt-5">
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted-foreground">{d.p.build.version}:</span>
-            <span className="rounded-lg bg-white/8 px-3 py-1 font-mono font-bold" dir="ltr">
+            <span className="rounded-lg bg-muted/70 px-3 py-1 font-mono font-bold" dir="ltr">
               v{app.version} ({app.versionCode})
             </span>
           </div>
@@ -237,7 +237,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                   ) : i === currentStage ? (
                     <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
                   ) : (
-                    <span className="size-4 shrink-0 rounded-full border border-white/15" />
+                    <span className="size-4 shrink-0 rounded-full border border-border" />
                   )}
                   {s}
                 </div>
@@ -264,8 +264,8 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                 </>
               ) : (
                 <>
-                  <AlertTriangle className="size-5 text-amber-400" />
-                  <div className="text-sm font-bold text-amber-400">{d.p.notifications.notConnected}</div>
+                  <AlertTriangle className="size-5 text-amber-600" />
+                  <div className="text-sm font-bold text-amber-600">{d.p.notifications.notConnected}</div>
                 </>
               )}
             </div>
@@ -308,13 +308,13 @@ export function BuildPanel({ app }: { app: AppRecord }) {
       {/* ===== History ===== */}
       <SectionCard title={d.p.build.history} icon={<Globe className="size-4.5" />}>
         {app.builds.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/10 px-4 py-8 text-center text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
             {d.p.build.noBuilds}
           </p>
         ) : (
           <div className="space-y-2.5">
             {app.builds.map((b) => (
-              <div key={b.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3.5">
+              <div key={b.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-muted/70 bg-muted/50 px-4 py-3.5">
                 <div className="flex items-center gap-3">
                   {b.status === "success" ? (
                     <CheckCircle2 className="size-5 shrink-0 text-primary" />
@@ -325,7 +325,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                   )}
                   <div>
                     <div className="flex items-center gap-2 font-bold">
-                      <span className="rounded-md bg-white/8 px-2 py-0.5 font-mono text-xs" dir="ltr">
+                      <span className="rounded-md bg-muted/70 px-2 py-0.5 font-mono text-xs" dir="ltr">
                         {b.output.toUpperCase()}
                       </span>
                       <span dir="ltr">v{b.version} ({b.versionCode})</span>
@@ -335,7 +335,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                       {b.sizeMb !== undefined && <span>{b.sizeMb.toFixed(1)} MB</span>}
                       {b.durationSec !== undefined && <span>{b.durationSec}s</span>}
                       <span>{formatTime(b.startedAt, lang)}</span>
-                      {b.siteCheckOk === false && <span className="text-amber-400">⚠ site</span>}
+                      {b.siteCheckOk === false && <span className="text-amber-600">⚠ site</span>}
                     </div>
                   </div>
                 </div>
@@ -343,13 +343,13 @@ export function BuildPanel({ app }: { app: AppRecord }) {
                   <span
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-bold",
-                      b.status === "success" ? "bg-primary/12 text-primary" : b.status === "failed" ? "bg-destructive/15 text-destructive" : "bg-white/8 text-muted-foreground",
+                      b.status === "success" ? "bg-primary/12 text-primary" : b.status === "failed" ? "bg-destructive/15 text-destructive" : "bg-muted/70 text-muted-foreground",
                     )}
                   >
                     {b.status === "success" ? d.p.build.success : b.status === "failed" ? d.p.build.failed : d.p.build.running}
                   </span>
                   {b.status === "success" && (
-                    <Button variant="outline" size="sm" className="rounded-lg border-white/12 bg-white/5" disabled>
+                    <Button variant="outline" size="sm" className="rounded-lg border-border bg-card" disabled>
                       <Download className="size-3.5" />
                       {d.p.build.download}
                     </Button>
@@ -358,7 +358,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
               </div>
             ))}
             <p className="flex items-start gap-1.5 pt-1 text-[11px] leading-relaxed text-muted-foreground">
-              <AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-400" />
+              <AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-600" />
               {d.p.build.downloadNote}
             </p>
           </div>
@@ -368,7 +368,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
       {/* ===== Publishing guides ===== */}
       <SectionCard title={d.p.build.publishTitle} icon={<Store className="size-4.5" />}>
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+          <div className="rounded-2xl border border-muted/70 bg-muted/50 p-5">
             <div className="flex items-center gap-2.5 font-display font-bold">
               <span className="text-xl" aria-hidden="true">🤖</span>
               Google Play
@@ -384,7 +384,7 @@ export function BuildPanel({ app }: { app: AppRecord }) {
               ))}
             </ol>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+          <div className="rounded-2xl border border-muted/70 bg-muted/50 p-5">
             <div className="flex items-center gap-2.5 font-display font-bold">
               <Apple className="size-5" />
               App Store

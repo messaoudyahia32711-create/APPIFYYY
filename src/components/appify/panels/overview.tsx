@@ -66,7 +66,7 @@ export function OverviewPanel({ app }: { app: AppRecord }) {
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <PlatformChips platforms={["android", "ios"]} />
-                <span className="rounded-full bg-white/6 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground" dir="ltr">
+                <span className="rounded-full bg-muted/60 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground" dir="ltr">
                   v{app.version} ({app.versionCode})
                 </span>
               </div>
@@ -110,7 +110,7 @@ export function OverviewPanel({ app }: { app: AppRecord }) {
                       "flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-start text-sm transition-colors",
                       item.done
                         ? "border-primary/20 bg-primary/[0.05] text-foreground"
-                        : "border-white/8 bg-white/[0.02] text-muted-foreground hover:border-primary/25 hover:text-foreground",
+                        : "border-muted/70 bg-muted/50 text-muted-foreground hover:border-primary/25 hover:text-foreground",
                     )}
                   >
                     {item.done ? (
@@ -139,7 +139,7 @@ export function OverviewPanel({ app }: { app: AppRecord }) {
                 <button
                   key={a.target}
                   onClick={() => go(a.target)}
-                  className="flex flex-col items-center gap-2.5 rounded-2xl border border-white/8 bg-white/[0.02] px-3 py-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.05]"
+                  className="flex flex-col items-center gap-2.5 rounded-2xl border border-muted/70 bg-muted/50 px-3 py-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.05]"
                 >
                   <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <a.icon className="size-5" />
@@ -156,7 +156,7 @@ export function OverviewPanel({ app }: { app: AppRecord }) {
           </SectionCard>
 
           {/* why */}
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-[#0E1A15] to-[#12101F] p-5">
+          <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-violet-50 to-purple-50 p-5">
             <h4 className="font-display font-bold text-primary">{d.p.overview.whatNext}</h4>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{d.p.overview.whatNextD}</p>
             <button

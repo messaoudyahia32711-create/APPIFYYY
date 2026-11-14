@@ -75,7 +75,7 @@ export function SettingsPanel({ app }: { app: AppRecord }) {
       <SectionCard title={d.p.settings.gPerf} icon={<Database className="size-4.5" />}>
         <div className="space-y-4">
           <ToggleRow label={d.p.settings.caching} desc={d.p.settings.cachingD} checked={app.settings.caching} onChange={(v) => set("caching", v)} icon={<Database className="size-4" />} />
-          <div className="rounded-xl border border-white/6 bg-white/[0.02] px-4 py-4">
+          <div className="rounded-xl border border-muted/60 bg-muted/50 px-4 py-4">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm font-semibold">{d.p.settings.cacheTtl}</span>
               <span className="rounded-full bg-primary/12 px-3 py-1 text-xs font-bold text-primary" dir="ltr">
@@ -129,12 +129,12 @@ export function SettingsPanel({ app }: { app: AppRecord }) {
         </div>
         <div className="mt-4 space-y-2">
           {app.settings.externalUrlPatterns.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-white/10 px-4 py-3.5 text-sm text-muted-foreground">
+            <p className="rounded-xl border border-dashed border-border px-4 py-3.5 text-sm text-muted-foreground">
               {d.p.settings.noRules}
             </p>
           ) : (
             app.settings.externalUrlPatterns.map((pattern, i) => (
-              <div key={`${pattern}-${i}`} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.03] px-4 py-2.5">
+              <div key={`${pattern}-${i}`} className="flex items-center justify-between rounded-xl border border-muted/70 bg-muted/60 px-4 py-2.5">
                 <code className="font-mono text-sm text-primary" dir="ltr">{pattern}</code>
                 <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" onClick={() => removePattern(i)} aria-label={d.common.remove}>
                   <X className="size-4" />

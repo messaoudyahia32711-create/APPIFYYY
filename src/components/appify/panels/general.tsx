@@ -78,7 +78,7 @@ export function GeneralPanel({ app }: { app: AppRecord }) {
                 if (f) onIconFile(f);
               }}
             />
-            <Button variant="outline" size="sm" className="rounded-xl border-white/12 bg-white/5" onClick={() => fileRef.current?.click()}>
+            <Button variant="outline" size="sm" className="rounded-xl border-border bg-card" onClick={() => fileRef.current?.click()}>
               <ImagePlus className="size-4 text-primary" />
               {d.p.general.changeIcon}
             </Button>
@@ -86,7 +86,7 @@ export function GeneralPanel({ app }: { app: AppRecord }) {
               <Button
                 variant="outline"
                 size="icon"
-                className="size-8 rounded-lg border-white/12 bg-white/5 hover:text-destructive"
+                className="size-8 rounded-lg border-border bg-card hover:text-destructive"
                 onClick={() => updateApp(app.id, (a) => ({ ...a, icon: undefined, updatedAt: Date.now() }))}
                 aria-label={d.p.appearance.iconRemove}
               >
@@ -126,7 +126,7 @@ export function GeneralPanel({ app }: { app: AppRecord }) {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 shrink-0 rounded-xl border-white/12 bg-white/5"
+                className="h-11 w-11 shrink-0 rounded-xl border-border bg-card"
                 onClick={() => setDraft((p) => ({ ...p, packageName: generatePackageName(p.url) }))}
                 aria-label={d.wizard.regenerate}
               >

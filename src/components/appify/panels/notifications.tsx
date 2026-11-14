@@ -86,7 +86,7 @@ export function NotificationsPanel({ app }: { app: AppRecord }) {
           <span
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold",
-              connected ? "bg-primary/12 text-primary" : "bg-amber-500/15 text-amber-400",
+              connected ? "bg-primary/12 text-primary" : "bg-amber-50 text-amber-600",
             )}
           >
             <span className={cn("size-1.5 rounded-full", connected ? "bg-primary" : "bg-amber-400")} />
@@ -134,12 +134,12 @@ export function NotificationsPanel({ app }: { app: AppRecord }) {
                     key={o.v}
                     className={cn(
                       "flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                      audience === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 bg-white/[0.02] text-muted-foreground",
+                      audience === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground",
                     )}
                   >
                     <RadioGroupItem value={o.v} className="sr-only" />
                     {o.label}
-                    <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px]" dir="ltr">{o.n.toLocaleString("en")}</span>
+                    <span className="rounded-full bg-muted/70 px-2 py-0.5 text-[10px]" dir="ltr">{o.n.toLocaleString("en")}</span>
                   </label>
                 ))}
               </RadioGroup>
@@ -156,10 +156,10 @@ export function NotificationsPanel({ app }: { app: AppRecord }) {
           </div>
 
           {/* phone-style notification preview */}
-          <div className="flex items-start justify-center rounded-2xl border border-white/8 bg-gradient-to-b from-[#12141A] to-[#0C0D10] p-5">
-            <div className="w-full max-w-64 rounded-2xl border border-white/12 bg-[#1A1C22] p-3.5 shadow-2xl">
+          <div className="flex items-start justify-center rounded-2xl border border-border bg-gradient-to-b from-slate-100 to-slate-200 p-5">
+            <div className="w-full max-w-64 rounded-2xl border border-border bg-white p-3.5 shadow-pop">
               <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                <span className="flex size-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#2EE6A8] to-[#8B7CFF] text-[10px] font-extrabold text-[#04120C]">
+                <span className="flex size-6 items-center justify-center rounded-lg bg-primary text-[10px] font-extrabold text-white">
                   {app.name[0] ?? "A"}
                 </span>
                 {app.name}
@@ -181,7 +181,7 @@ export function NotificationsPanel({ app }: { app: AppRecord }) {
               { icon: MailOpen, label: d.p.notifications.stDelivered, value: last.delivered },
               { icon: MousePointerClick, label: d.p.notifications.stOpened, value: last.opened },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl border border-white/8 bg-white/[0.02] p-4 text-center">
+              <div key={s.label} className="rounded-2xl border border-muted/70 bg-muted/50 p-4 text-center">
                 <s.icon className="mx-auto size-5 text-primary" />
                 <div className="mt-2 font-display text-2xl font-extrabold" dir="ltr">
                   {s.value.toLocaleString("en")}
@@ -196,20 +196,20 @@ export function NotificationsPanel({ app }: { app: AppRecord }) {
       {/* History */}
       <SectionCard title={d.p.notifications.history} icon={<History className="size-4.5" />}>
         {app.notifications.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/10 px-4 py-8 text-center text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
             {d.p.notifications.noHistory}
           </p>
         ) : (
           <div className="space-y-2.5">
             {app.notifications.map((n) => (
-              <div key={n.id} className="rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3.5">
+              <div key={n.id} className="rounded-xl border border-muted/70 bg-muted/50 px-4 py-3.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="flex items-center gap-2 font-bold">
                     <Bell className="size-4 text-primary" />
                     {n.title}
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-white/8 px-2.5 py-0.5 text-[11px] font-bold text-muted-foreground">
+                    <span className="rounded-full bg-muted/70 px-2.5 py-0.5 text-[11px] font-bold text-muted-foreground">
                       {n.audience === "all" ? d.p.notifications.audAll : n.audience === "android" ? d.p.notifications.audAndroid : d.p.notifications.audIos}
                     </span>
                     <span className="text-[11px] text-muted-foreground">{formatTime(n.sentAt, lang)}</span>
@@ -220,7 +220,7 @@ export function NotificationsPanel({ app }: { app: AppRecord }) {
                   <span><b className="text-foreground">{n.sent.toLocaleString("en")}</b> {d.p.notifications.stSent}</span>
                   <span><b className="text-foreground">{n.delivered.toLocaleString("en")}</b> {d.p.notifications.stDelivered}</span>
                   <span><b className="text-foreground">{n.opened.toLocaleString("en")}</b> {d.p.notifications.stOpened}</span>
-                  {n.deepLink && <span className="rounded bg-white/8 px-2 py-0.5 font-mono">{n.deepLink}</span>}
+                  {n.deepLink && <span className="rounded bg-muted/70 px-2 py-0.5 font-mono">{n.deepLink}</span>}
                 </div>
               </div>
             ))}

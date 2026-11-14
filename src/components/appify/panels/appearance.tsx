@@ -64,7 +64,7 @@ export function AppearancePanel({ app }: { app: AppRecord }) {
         <div className="flex items-center gap-5">
           <AppIconBadge name={app.name} icon={app.icon} size={64} className="shadow-xl" />
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onIconFile(f); }} />
-          <Button variant="outline" size="sm" className="rounded-xl border-white/12 bg-white/5" onClick={() => fileRef.current?.click()}>
+          <Button variant="outline" size="sm" className="rounded-xl border-border bg-card" onClick={() => fileRef.current?.click()}>
             <ImagePlus className="size-4 text-primary" />
             {d.p.appearance.iconUpload}
           </Button>
@@ -72,7 +72,7 @@ export function AppearancePanel({ app }: { app: AppRecord }) {
             <Button
               variant="outline"
               size="icon"
-              className="size-8 rounded-lg border-white/12 bg-white/5 hover:text-destructive"
+              className="size-8 rounded-lg border-border bg-card hover:text-destructive"
               onClick={() => updateApp(app.id, (a) => ({ ...a, icon: undefined, updatedAt: Date.now() }))}
               aria-label={d.p.appearance.iconRemove}
             >
@@ -87,7 +87,7 @@ export function AppearancePanel({ app }: { app: AppRecord }) {
         <div className="grid gap-5 lg:grid-cols-[auto_1fr]">
           {/* live splash preview */}
           <div
-            className="flex h-40 w-64 flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 shadow-inner"
+            className="flex h-40 w-64 flex-col items-center justify-center gap-3 rounded-2xl border border-border shadow-inner"
             style={{ background: draft.splashBg }}
           >
             <AppIconBadge name={app.name} icon={app.icon} size={56} />
@@ -137,7 +137,7 @@ export function AppearancePanel({ app }: { app: AppRecord }) {
                 key={v}
                 className={cn(
                   "flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                  draft.statusBarContent === v ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 bg-white/[0.02] text-muted-foreground",
+                  draft.statusBarContent === v ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground",
                 )}
               >
                 <RadioGroupItem value={v} className="sr-only" />
@@ -147,7 +147,7 @@ export function AppearancePanel({ app }: { app: AppRecord }) {
             ))}
           </RadioGroup>
         </div>
-        <div className="mt-5 space-y-3 border-t border-white/6 pt-5">
+        <div className="mt-5 space-y-3 border-t border-muted/60 pt-5">
           <ToggleRow
             label={d.p.appearance.appBarEnable}
             checked={draft.appBarEnabled}
@@ -188,7 +188,7 @@ export function AppearancePanel({ app }: { app: AppRecord }) {
                   key={o.v}
                   className={cn(
                     "flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                    draft.orientation === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 bg-white/[0.02] text-muted-foreground",
+                    draft.orientation === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground",
                   )}
                 >
                   <RadioGroupItem value={o.v} className="sr-only" />
@@ -216,7 +216,7 @@ export function AppearancePanel({ app }: { app: AppRecord }) {
                   key={o.v}
                   className={cn(
                     "flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                    draft.theme === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 bg-white/[0.02] text-muted-foreground",
+                    draft.theme === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground",
                   )}
                 >
                   <RadioGroupItem value={o.v} className="sr-only" />

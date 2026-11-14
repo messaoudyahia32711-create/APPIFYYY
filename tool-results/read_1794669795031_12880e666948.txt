@@ -1,0 +1,589 @@
+     1→"use client";
+     2→
+     3→import { useCallback, useEffect, useRef, useState } from "react";
+     4→import {
+     5→  ArrowLeft,
+     6→  ArrowRight,
+     7→  Eye,
+     8→  Fingerprint,
+     9→  ScanLine,
+    10→  Smartphone,
+    11→  Apple,
+    12→  Megaphone,
+    13→  Vibrate,
+    14→  UserRound,
+    15→  Bell,
+    16→  Trash2,
+    17→  RotateCcw,
+    18→  ExternalLink,
+    19→  Info,
+    20→  Wifi,
+    21→  BatteryFull,
+    22→  Signal,
+    23→  Menu,
+    24→} from "lucide-react";
+    25→import { Button } from "@/components/ui/button";
+    26→import { AppifyLogo, LangToggle, AppIconBadge } from "./ui";
+    27→import { SampleStore, type StorePage } from "./sample-store";
+    28→import { useLang } from "@/lib/appify/i18n";
+    29→import { useAppById, useAppifyStore } from "@/lib/appify/store";
+    30→import { navigate } from "@/lib/appify/router";
+    31→import { getIcon } from "@/lib/appify/icons";
+    32→import { isSampleUrl, samplePageFromUrl } from "@/lib/appify/defaults";
+    33→import type { AppRecord } from "@/lib/appify/types";
+    34→import { cn } from "@/lib/utils";
+    35→
+    36→/* ---------- helpers ---------- */
+    37→function scopeCss(css: string, scope: string): string {
+    38→  const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    39→  return noComments.replace(/([^{}]+)\{([^{}]*)\}/g, (match: string, sel: string, body: string) => {
+    40→    const trimmed = sel.trim();
+    41→    if (!trimmed || trimmed.startsWith("@")) return match;
+    42→    const scoped = trimmed
+    43→      .split(",")
+    44→      .map((s) => `.${scope} ${s.trim()}`)
+    45→      .join(", ");
+    46→    return `${scoped} {${body}}`;
+    47→  });
+    48→}
+    49→
+    50→function patternMatches(url: string, pattern: string): boolean {
+    51→  try {
+    52→    const regexStr = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+    53→    return new RegExp(regexStr, "i").test(url);
+    54→  } catch {
+    55→    return false;
+    56→  }
+    57→}
+    58→
+    59→type BridgeMethodId =
+    60→  | "biometric" | "identify" | "qr" | "google" | "apple" | "interstitial"
+    61→  | "vibrate" | "push" | "share" | "analytics" | "updateNav" | "updateDrawer"
+    62→  | "updateAppBar" | "deeplink" | "cartAdd" | "cartPay";
+    63→
+    64→const METHOD_SIG: Record<BridgeMethodId, string> = {
+    65→  biometric: "AppifyBridge.startBiometricAuthentication({ title })",
+    66→  identify: "AppifyBridge.requestUserIdentification()",
+    67→  qr: "AppifyBridge.openQRScanner({ onResult })",
+    68→  google: "AppifyBridge.signInWithGoogle()",
+    69→  apple: "AppifyBridge.signInWithApple()",
+    70→  interstitial: "AppifyBridge.showInterstitialAd()",
+    71→  vibrate: "AppifyBridge.vibrate([40, 60, 40])",
+    72→  push: "AppifyBridge.requestPushPermission()",
+    73→  share: "AppifyBridge.share({ title, url })",
+    74→  analytics: "AppifyBridge.logAnalyticsEvent('add_to_cart')",
+    75→  updateNav: "AppifyBridge.updateBottomNavigationBar({ items })",
+    76→  updateDrawer: "AppifyBridge.updateNavigationDrawer({ items })",
+    77→  updateAppBar: "AppifyBridge.updateAppBar({ title, color })",
+    78→  deeplink: "AppifyBridge.openDeepLink('/product/123')",
+    79→  cartAdd: "AppifyBridge.logAnalyticsEvent('add_to_cart') + vibrate(30)",
+    80→  cartPay: "AppifyBridge.logAnalyticsEvent('purchase')",
+    81→};
+    82→
+    83→/* ==================== Preview page ==================== */
+    84→export function PreviewPage({ appId }: { appId: string }) {
+    85→  const { d, lang } = useLang();
+    86→  const app = useAppById(appId);
+    87→  const bridgeEvents = useAppifyStore((s) => s.bridgeEvents);
+    88→  const pushBridgeEvent = useAppifyStore((s) => s.pushBridgeEvent);
+    89→  const clearBridgeEvents = useAppifyStore((s) => s.clearBridgeEvents);
+    90→  const pendingBridgeDemo = useAppifyStore((s) => s.pendingBridgeDemo);
+    91→  const clearPendingBridgeDemo = useAppifyStore((s) => s.clearPendingBridgeDemo);
+    92→
+    93→  const [device, setDevice] = useState<"pixel" | "iphone">("pixel");
+    94→  const [splashKey, setSplashKey] = useState(0);
+    95→  const [splashVisible, setSplashVisible] = useState(true);
+    96→  const [showNav, setShowNav] = useState(true);
+    97→  const [showFab, setShowFab] = useState(true);
+    98→  const [showAppBar, setShowAppBar] = useState(true);
+    99→  const [samplePage, setSamplePage] = useState<StorePage>(() => (app ? (samplePageFromUrl(app.url) as StorePage) : "home"));
+   100→  const [currentUrl, setCurrentUrl] = useState<string>(() => app?.url ?? "");
+   101→  const [drawerOpen, setDrawerOpen] = useState(false);
+   102→  const [signedIn, setSignedIn] = useState(false);
+   103→  const [phoneToast, setPhoneToast] = useState<string | null>(null);
+   104→  const toastTimer = useRef<number | null>(null);
+   105→  const Back = lang === "ar" ? ArrowRight : ArrowLeft;
+   106→
+   107→  const isSample = app ? isSampleUrl(app.url) : false;
+   108→
+   109→  // splash timing — visible initially, hidden after the configured duration
+   110→  useEffect(() => {
+   111→    if (!app) return;
+   112→    const t = window.setTimeout(() => setSplashVisible(false), Math.max(600, app.style.splashDuration));
+   113→    return () => window.clearTimeout(t);
+   114→     
+   115→  }, [app?.id, splashKey]);
+   116→
+   117→  const showPhoneToast = useCallback((text: string) => {
+   118→    setPhoneToast(text);
+   119→    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+   120→    toastTimer.current = window.setTimeout(() => setPhoneToast(null), 2600);
+   121→  }, []);
+   122→
+   123→  const trigger = useCallback(
+   124→    (method: BridgeMethodId) => {
+   125→      const resultText =
+   126→        method === "analytics" || method === "updateNav" || method === "updateDrawer" || method === "updateAppBar" || method === "deeplink" || method === "cartPay"
+   127→          ? d.preview.eventDone
+   128→          : d.preview.bridgeToast[method === "cartAdd" ? "vibrate" : (method as keyof typeof d.preview.bridgeToast)];
+   129→      pushBridgeEvent({ method: METHOD_SIG[method], result: resultText });
+   130→      showPhoneToast(resultText);
+   131→      if (method === "qr") {
+   132→        window.setTimeout(() => {
+   133→          pushBridgeEvent({ method: `${METHOD_SIG.qr} → onResult(...)`, result: d.preview.bridgeToast.qrResult });
+   134→          showPhoneToast(d.preview.bridgeToast.qrResult);
+   135→        }, 1800);
+   136→      }
+   137→    },
+   138→    [pushBridgeEvent, showPhoneToast, d],
+   139→  );
+   140→
+   141→  // consume queued demo events coming from the bridge panel
+   142→  useEffect(() => {
+   143→    if (pendingBridgeDemo) {
+   144→      const m = pendingBridgeDemo as BridgeMethodId;
+   145→      clearPendingBridgeDemo();
+   146→      window.setTimeout(() => trigger(m), 350);
+   147→    }
+   148→  }, [pendingBridgeDemo, clearPendingBridgeDemo, trigger]);
+   149→
+   150→  // run custom JS (in a sandboxed function) against the mini bridge
+   151→  useEffect(() => {
+   152→    if (!app || !isSample) return;
+   153→    const js = app.customCode.js.trim();
+   154→    if (!js) return;
+   155→    try {
+   156→      const miniBridge = {
+   157→        vibrate: () => trigger("vibrate"),
+   158→        showInterstitialAd: () => trigger("interstitial"),
+   159→        requestPushPermission: () => trigger("push"),
+   160→        logAnalyticsEvent: (name: string) => pushBridgeEvent({ method: `AppifyBridge.logAnalyticsEvent('${name}')`, result: d.preview.eventDone }),
+   161→      };
+   162→       
+   163→      new Function("AppifyBridge", js)(miniBridge);
+   164→    } catch {
+   165→      /* user code errors are ignored in demo */
+   166→    }
+   167→     
+   168→  }, [app?.customCode.js, isSample, app?.id]);
+   169→
+   170→  const handleStoreNav = (page: StorePage) => {
+   171→    setSamplePage(page);
+   172→    setCurrentUrl(`sample://store/${page}`);
+   173→  };
+   174→
+   175→  const handleStoreBridge = (method: string) => {
+   176→    if (method === "cartAdd") {
+   177→      pushBridgeEvent({ method: METHOD_SIG.analytics, result: d.preview.eventDone });
+   178→      trigger("vibrate");
+   179→    } else if (method === "cartPay") {
+   180→      pushBridgeEvent({ method: METHOD_SIG.cartPay, result: d.preview.eventDone });
+   181→    } else {
+   182→      trigger(method as BridgeMethodId);
+   183→    }
+   184→  };
+   185→
+   186→  const handleNavClick = (url: string) => {
+   187→    setCurrentUrl(url);
+   188→    if (isSampleUrl(url)) setSamplePage(samplePageFromUrl(url) as StorePage);
+   189→    setDrawerOpen(false);
+   190→  };
+   191→
+   192→  const scopedCss = app && isSample ? scopeCss(app.customCode.css, "appify-store-root") : "";
+   193→
+   194→  if (!app) {
+   195→    return (
+   196→      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+   197→        <h1 className="font-display text-2xl font-bold">{d.ws.notFound}</h1>
+   198→        <Button onClick={() => navigate("#/dashboard")} className="rounded-xl bg-primary font-bold text-primary-foreground">
+   199→          {d.ws.backDash}
+   200→        </Button>
+   201→      </div>
+   202→    );
+   203→  }
+   204→
+   205→  const nav = app.navigation;
+   206→  const style = app.style;
+   207→
+   208→  const hiddenByPattern = nav.hideOnPatterns.some((p) => patternMatches(currentUrl, p));
+   209→  const navVisible = nav.bottomNavEnabled && showNav && !hiddenByPattern;
+   210→  const activeItem = nav.bottomNavItems.find((it) => it.url === currentUrl) ?? nav.bottomNavItems[0];
+   211→
+   212→  const statusTextColor = style.statusBarContent === "dark" ? "#111318" : "#FFFFFF";
+   213→
+   214→  return (
+   215→    <div className="flex min-h-screen flex-col">
+   216→      {/* top bar */}
+   217→      <header className="sticky top-0 z-40 border-b border-white/8 bg-[#0A0A0B]/85 backdrop-blur-xl">
+   218→        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
+   219→          <div className="flex min-w-0 items-center gap-3">
+   220→            <Button
+   221→              variant="ghost"
+   222→              size="sm"
+   223→              onClick={() => navigate(`#/app/${app.id}`)}
+   224→              className="shrink-0 gap-1.5 rounded-xl text-muted-foreground hover:bg-white/6 hover:text-foreground"
+   225→            >
+   226→              <Back className="size-4" />
+   227→              <span className="hidden sm:inline">{app.name}</span>
+   228→            </Button>
+   229→            <span className="h-6 w-px bg-white/10" />
+   230→            <span className="flex items-center gap-2 font-display text-sm font-bold">
+   231→              <Eye className="size-4 text-primary" />
+   232→              {d.preview.title}
+   233→            </span>
+   234→          </div>
+   235→          <div className="flex shrink-0 items-center gap-2">
+   236→            <LangToggle />
+   237→            <Button onClick={() => navigate("#/dashboard")} variant="outline" className="rounded-xl border-white/12 bg-white/5">
+   238→              <AppifyLogo size={22} withText={false} />
+   239→              {d.common.dashboard}
+   240→            </Button>
+   241→          </div>
+   242→        </div>
+   243→      </header>
+   244→
+   245→      <main className="mx-auto grid w-full max-w-6xl flex-1 items-start gap-8 px-4 py-7 md:px-6 lg:grid-cols-[auto_minmax(0,1fr)]">
+   246→        {/* ===== phone column ===== */}
+   247→        <div className="mx-auto space-y-4">
+   248→          {/* toolbar */}
+   249→          <div className="flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-white/8 bg-card px-3.5 py-3">
+   250→            <div className="flex rounded-xl bg-white/6 p-1" role="group" aria-label={d.preview.device}>
+   251→              {(
+   252→                [
+   253→                  { v: "pixel", label: d.preview.pixel },
+   254→                  { v: "iphone", label: d.preview.iphone },
+   255→                ] as const
+   256→              ).map((o) => (
+   257→                <button
+   258→                  key={o.v}
+   259→                  onClick={() => setDevice(o.v)}
+   260→                  className={cn(
+   261→                    "rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
+   262→                    device === o.v ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground",
+   263→                  )}
+   264→                >
+   265→                  {o.label}
+   266→                </button>
+   267→              ))}
+   268→            </div>
+   269→            <Button variant="outline" size="sm" onClick={() => { setSplashVisible(true); setSplashKey((k) => k + 1); }} className="rounded-lg border-white/12 bg-white/5 text-xs">
+   270→              <RotateCcw className="size-3.5 text-primary" />
+   271→              {d.preview.replaySplash}
+   272→            </Button>
+   273→            {(
+   274→              [
+   275→                { on: showNav, set: setShowNav, label: d.preview.toggleNav },
+   276→                { on: showFab, set: setShowFab, label: d.preview.toggleFab },
+   277→                { on: showAppBar, set: setShowAppBar, label: d.preview.toggleAppBar },
+   278→              ] as const
+   279→            ).map((t) => (
+   280→              <button
+   281→                key={t.label}
+   282→                onClick={() => t.set(!t.on)}
+   283→                className={cn(
+   284→                  "rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
+   285→                  t.on ? "bg-primary/15 text-primary" : "bg-white/6 text-muted-foreground line-through",
+   286→                )}
+   287→              >
+   288→                {t.label}
+   289→              </button>
+   290→            ))}
+   291→            {!isSample && (
+   292→              <Button variant="outline" size="sm" onClick={() => window.open(currentUrl, "_blank")} className="rounded-lg border-white/12 bg-white/5 text-xs">
+   293→                <ExternalLink className="size-3.5" />
+   294→                {d.preview.openExternal}
+   295→              </Button>
+   296→            )}
+   297→          </div>
+   298→
+   299→          {/* phone frame */}
+   300→          <div className="mx-auto w-[324px]" dir="ltr">
+   301→            <div className={cn("relative rounded-[2.8rem] border border-white/15 bg-[#101013] p-2.5 shadow-2xl", device === "iphone" ? "rounded-[3rem]" : "")}>
+   302→              <div className="relative overflow-hidden rounded-[2.3rem]">
+   303→                {/* content background */}
+   304→                <div className="relative flex h-[600px] flex-col" style={{ background: style.appBgColor }}>
+   305→                  {/* status bar */}
+   306→                  <div className="relative z-30 flex items-center justify-between px-6 pt-2.5 pb-1" style={{ background: style.statusBarColor, color: statusTextColor }}>
+   307→                    <span className="text-[11px] font-bold" dir="ltr">9:41</span>
+   308→                    {/* notch */}
+   309→                    {device === "iphone" ? (
+   310→                      <span className="absolute left-1/2 top-1.5 h-5 w-24 -translate-x-1/2 rounded-full bg-black" />
+   311→                    ) : (
+   312→                      <span className="absolute left-1/2 top-2 size-3.5 -translate-x-1/2 rounded-full bg-black/90" />
+   313→                    )}
+   314→                    <span className="flex items-center gap-1.5 opacity-90">
+   315→                      <Signal className="size-3" />
+   316→                      <Wifi className="size-3" />
+   317→                      <BatteryFull className="size-3.5" />
+   318→                    </span>
+   319→                  </div>
+   320→
+   321→                  {/* app bar */}
+   322→                  {style.appBarEnabled && showAppBar && (
+   323→                    <div className="relative z-20 flex items-center gap-2.5 px-4 py-2.5" style={{ background: style.appBarColor, color: statusTextColor }}>
+   324→                      {nav.drawerEnabled && (
+   325→                        <button onClick={() => setDrawerOpen(true)} aria-label="drawer">
+   326→                          <Menu className="size-5" />
+   327→                        </button>
+   328→                      )}
+   329→                      <span className="truncate font-display text-sm font-bold">{style.appBarTitle || app.name}</span>
+   330→                    </div>
+   331→                  )}
+   332→
+   333→                  {/* content */}
+   334→                  <div className="relative flex-1 overflow-hidden" dir={lang === "ar" ? "rtl" : "ltr"}>
+   335→                    {isSample ? (
+   336→                      <div className="appify-store-root relative h-full" id="phone-screen">
+   337→                        {scopedCss.trim() && <style dangerouslySetInnerHTML={{ __html: scopedCss }} />}
+   338→                        <SampleStore
+   339→                          page={samplePage}
+   340→                          onNavigate={handleStoreNav}
+   341→                          onBridge={handleStoreBridge}
+   342→                          appBg={style.appBgColor}
+   343→                          signedIn={signedIn}
+   344→                          onSignIn={setSignedIn}
+   345→                        />
+   346→                      </div>
+   347→                    ) : (
+   348→                      <iframe
+   349→                        key={currentUrl}
+   350→                        src={currentUrl}
+   351→                        title={app.name}
+   352→                        className="h-full w-full border-0 bg-white"
+   353→                        referrerPolicy="no-referrer"
+   354→                      />
+   355→                    )}
+   356→
+   357→                    {/* splash overlay */}
+   358→                    {splashVisible && (
+   359→                      <div
+   360→                        className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-4 transition-opacity duration-500"
+   361→                        style={{ background: style.splashBg }}
+   362→                      >
+   363→                        <AppIconBadge name={app.name} icon={app.icon} size={72} className="animate-pulse-glow" />
+   364→                        <span className="font-display text-lg font-extrabold" style={{ color: style.splashLogoColor }}>
+   365→                          {app.name}
+   366→                        </span>
+   367→                      </div>
+   368→                    )}
+   369→
+   370→                    {/* drawer overlay */}
+   371→                    {drawerOpen && nav.drawerEnabled && (
+   372→                      <div className="absolute inset-0 z-40 flex" dir={lang === "ar" ? "rtl" : "ltr"}>
+   373→                        <button className="absolute inset-0 bg-black/45" onClick={() => setDrawerOpen(false)} aria-label={d.common.close} />
+   374→                        <aside className="relative flex h-full w-60 flex-col bg-white shadow-2xl" style={{ marginInlineStart: 0 }}>
+   375→                          <div className="flex items-center gap-2.5 bg-gradient-to-br from-[#2EE6A8] to-[#8B7CFF] px-4 pb-4 pt-6">
+   376→                            <AppIconBadge name={app.name} icon={app.icon} size={40} />
+   377→                            <div>
+   378→                              <div className="font-display text-sm font-extrabold text-[#04120C]">{app.name}</div>
+   379→                              <div className="text-[10px] font-bold text-[#04120C]/70">{nav.drawerTitle}</div>
+   380→                            </div>
+   381→                          </div>
+   382→                          <nav className="flex-1 space-y-1 overflow-y-auto p-2.5">
+   383→                            {nav.drawerItems.map((item) => {
+   384→                              const Icon = getIcon(item.icon);
+   385→                              return (
+   386→                                <button
+   387→                                  key={item.id}
+   388→                                  onClick={() => handleNavClick(item.url)}
+   389→                                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+   390→                                >
+   391→                                  <Icon className="size-4.5 text-[#0A8F63]" />
+   392→                                  <span className="truncate">{item.label}</span>
+   393→                                </button>
+   394→                              );
+   395→                            })}
+   396→                            {nav.drawerItems.length === 0 && (
+   397→                              <p className="px-3 py-4 text-xs text-gray-400">{nav.drawerTitle}</p>
+   398→                            )}
+   399→                          </nav>
+   400→                        </aside>
+   401→                      </div>
+   402→                    )}
+   403→
+   404→                    {/* bridge toast bubble */}
+   405→                    {phoneToast && (
+   406→                      <div className="animate-slide-up pointer-events-none absolute inset-x-3 top-3 z-50" dir={lang === "ar" ? "rtl" : "ltr"}>
+   407→                        <div className="rounded-2xl border border-primary/40 bg-[#0E1A15]/95 px-4 py-3 shadow-2xl backdrop-blur">
+   408→                          <div className="flex items-center gap-2.5">
+   409→                            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+   410→                              <Fingerprint className="size-4" />
+   411→                            </span>
+   412→                            <span className="text-xs font-bold text-white">{phoneToast}</span>
+   413→                          </div>
+   414→                        </div>
+   415→                      </div>
+   416→                    )}
+   417→
+   418→                    {/* FAB */}
+   419→                    {nav.fabEnabled && showFab && (
+   420→                      <button
+   421→                        onClick={() => handleNavClick(nav.fabUrl)}
+   422→                        className="absolute bottom-4 z-30 flex size-13 items-center justify-center rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform hover:scale-105 active:scale-95 ltr:right-4 rtl:left-4"
+   423→                        style={{ background: nav.fabColor, width: 52, height: 52 }}
+   424→                        aria-label={d.p.navigation.fab}
+   425→                      >
+   426→                        {(() => {
+   427→                          const Icon = getIcon(nav.fabIcon);
+   428→                          return <Icon className="size-6" style={{ color: "#04120C" }} />;
+   429→                        })()}
+   430→                      </button>
+   431→                    )}
+   432→                  </div>
+   433→
+   434→                  {/* bottom nav */}
+   435→                  {navVisible && (
+   436→                    <div
+   437→                      className="relative z-30 flex items-end justify-around border-t border-white/6"
+   438→                      style={{ background: nav.navBgColor, height: nav.navHeight }}
+   439→                      dir={lang === "ar" ? "rtl" : "ltr"}
+   440→                    >
+   441→                      {nav.bottomNavItems.map((item) => {
+   442→                        const Icon = getIcon(item.icon);
+   443→                        const active = item.id === activeItem?.id;
+   444→                        return (
+   445→                          <button
+   446→                            key={item.id}
+   447→                            onClick={() => handleNavClick(item.url)}
+   448→                            className="flex flex-1 flex-col items-center justify-center gap-0.5"
+   449→                            aria-label={item.label}
+   450→                          >
+   451→                            <Icon
+   452→                              style={{
+   453→                                width: nav.navIconSize,
+   454→                                height: nav.navIconSize,
+   455→                                color: active ? nav.navActiveColor : nav.navInactiveColor,
+   456→                              }}
+   457→                              strokeWidth={active ? 2.4 : 1.8}
+   458→                            />
+   459→                            {nav.navShowLabels && (
+   460→                              <span
+   461→                                className="max-w-20 truncate text-[10px] font-bold"
+   462→                                style={{ color: active ? nav.navActiveColor : nav.navInactiveColor }}
+   463→                              >
+   464→                                {item.label}
+   465→                              </span>
+   466→                            )}
+   467→                          </button>
+   468→                        );
+   469→                      })}
+   470→                    </div>
+   471→                  )}
+   472→                </div>
+   473→              </div>
+   474→            </div>
+   475→          </div>
+   476→
+   477→          {/* external iframe hint */}
+   478→          {!isSample && (
+   479→            <div className="flex items-start gap-2.5 rounded-2xl border border-amber-500/25 bg-amber-500/[0.07] px-4 py-3.5">
+   480→              <Info className="mt-0.5 size-4 shrink-0 text-amber-400" />
+   481→              <div className="text-xs leading-relaxed text-muted-foreground">
+   482→                <b className="text-foreground">{d.preview.blocked}.</b> {d.preview.blockedHint}
+   483→              </div>
+   484→            </div>
+   485→          )}
+   486→          {isSample && (
+   487→            <div className="flex items-center justify-center gap-2 text-xs font-bold text-primary">
+   488→              <Smartphone className="size-3.5" />
+   489→              {d.preview.sampleBadge} — {d.store.name}
+   490→            </div>
+   491→          )}
+   492→        </div>
+   493→
+   494→        {/* ===== console column ===== */}
+   495→        <div className="space-y-5">
+   496→          <div className="rounded-2xl border border-white/8 bg-card p-5">
+   497→            <h3 className="font-display text-base font-bold">{d.preview.desc}</h3>
+   498→            <div className="mt-3.5 flex flex-wrap gap-2 text-xs">
+   499→              {[
+   500→                { label: d.p.appearance.statusBarColor, value: style.statusBarColor },
+   501→                { label: d.p.appearance.splashBg, value: style.splashBg },
+   502→                { label: d.p.appearance.splashDuration, value: `${(style.splashDuration / 1000).toFixed(1)}s` },
+   503→                { label: d.p.navigation.bottomNav, value: navVisible ? d.common.enabled : d.common.disabled },
+   504→                { label: d.p.navigation.drawer, value: nav.drawerEnabled ? d.common.enabled : d.common.disabled },
+   505→                { label: d.p.navigation.fab, value: nav.fabEnabled && showFab ? d.common.enabled : d.common.disabled },
+   506→              ].map((chip) => (
+   507→                <span key={chip.label} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-semibold text-muted-foreground">
+   508→                  {chip.label}: <b className="text-foreground" dir="ltr">{chip.value}</b>
+   509→                </span>
+   510→              ))}
+   511→            </div>
+   512→          </div>
+   513→
+   514→          {/* console */}
+   515→          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0C0E11]">
+   516→            <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+   517→              <span className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
+   518→                <Megaphone className="size-4 text-primary" />
+   519→                {d.preview.console}
+   520→              </span>
+   521→              <Button variant="ghost" size="sm" onClick={clearBridgeEvents} className="gap-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground">
+   522→                <Trash2 className="size-3.5" />
+   523→                {d.preview.clear}
+   524→              </Button>
+   525→            </div>
+   526→            <div className="scrollbar-thin max-h-72 min-h-40 space-y-2 overflow-y-auto p-4">
+   527→              {bridgeEvents.length === 0 ? (
+   528→                <p className="py-6 text-center text-sm text-muted-foreground">{d.preview.consoleEmpty}</p>
+   529→              ) : (
+   530→                bridgeEvents.map((ev) => (
+   531→                  <div key={ev.id} className="rounded-xl border border-white/8 bg-white/[0.03] px-3.5 py-2.5" dir="ltr">
+   532→                    <div className="flex items-start justify-between gap-3">
+   533→                      <code className="font-mono text-xs font-bold text-primary">{ev.method}</code>
+   534→                      <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+   535→                        {new Date(ev.at).toLocaleTimeString("en", { hour12: false })}
+   536→                      </span>
+   537→                    </div>
+   538→                    <div className="mt-1 text-[11px] font-semibold text-[#C9E8D8]">→ {ev.result}</div>
+   539→                  </div>
+   540→                ))
+   541→              )}
+   542→            </div>
+   543→          </div>
+   544→
+   545→          {/* triggers */}
+   546→          <div className="rounded-2xl border border-white/8 bg-card p-5">
+   547→            <h4 className="mb-3.5 font-display text-sm font-bold">{d.preview.trigger}</h4>
+   548→            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+   549→              {(
+   550→                [
+   551→                  { m: "biometric", label: d.preview.evBiometric, icon: Fingerprint },
+   552→                  { m: "qr", label: d.preview.evQr, icon: ScanLine },
+   553→                  { m: "google", label: d.preview.evGoogle, icon: GlobeIcon },
+   554→                  { m: "apple", label: d.preview.evApple, icon: Apple },
+   555→                  { m: "interstitial", label: d.preview.evInterstitial, icon: Megaphone },
+   556→                  { m: "vibrate", label: d.preview.evVibrate, icon: Vibrate },
+   557→                  { m: "identify", label: d.preview.evIdentify, icon: UserRound },
+   558→                  { m: "push", label: d.preview.evPush, icon: Bell },
+   559→                ] as const
+   560→              ).map((t) => (
+   561→                <button
+   562→                  key={t.m}
+   563→                  onClick={() => trigger(t.m as BridgeMethodId)}
+   564→                  className="flex flex-col items-center gap-2 rounded-xl border border-white/8 bg-white/[0.02] px-2 py-3.5 text-center transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.05]"
+   565→                >
+   566→                  <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+   567→                    <t.icon className="size-4.5" />
+   568→                  </span>
+   569→                  <span className="text-[11px] font-bold leading-tight">{t.label}</span>
+   570→                </button>
+   571→              ))}
+   572→            </div>
+   573→          </div>
+   574→        </div>
+   575→      </main>
+   576→    </div>
+   577→  );
+   578→}
+   579→
+   580→function GlobeIcon(props: { className?: string }) {
+   581→  return (
+   582→    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={props.className} aria-hidden="true">
+   583→      <circle cx="12" cy="12" r="10" />
+   584→      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+   585→      <path d="M2 12h20" />
+   586→    </svg>
+   587→  );
+   588→}
+   589→

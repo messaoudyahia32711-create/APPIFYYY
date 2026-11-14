@@ -50,8 +50,8 @@ export function WizardPage() {
   const [pkg, setPkg] = useState("");
   const [bundle, setBundle] = useState("");
   const [icon, setIcon] = useState<string | undefined>(undefined);
-  const [splashBg, setSplashBg] = useState("#0A0A0B");
-  const [statusBarColor, setStatusBarColor] = useState("#0A0A0B");
+  const [splashBg, setSplashBg] = useState("#6D28D9");
+  const [statusBarColor, setStatusBarColor] = useState("#6D28D9");
   const [creating, setCreating] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -159,11 +159,11 @@ export function WizardPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-white/8 bg-[#0A0A0B]/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border bg-card/92 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between gap-3 px-4 md:px-6">
           <button onClick={() => navigate("#/dashboard")} className="flex items-center gap-3">
             <AppifyLogo />
-            <span className="hidden rounded-full bg-white/6 px-3 py-1 text-xs font-semibold text-muted-foreground sm:block">
+            <span className="hidden rounded-full bg-muted/60 px-3 py-1 text-xs font-semibold text-muted-foreground sm:block">
               {d.wizard.title}
             </span>
           </button>
@@ -182,7 +182,7 @@ export function WizardPage() {
               <div
                 className={cn(
                   "h-1.5 flex-1 rounded-full transition-colors",
-                  i <= stepIndex ? "bg-primary" : "bg-white/10",
+                  i <= stepIndex ? "bg-primary" : "bg-border",
                 )}
               />
             </div>
@@ -194,7 +194,7 @@ export function WizardPage() {
           </span>
         </div>
 
-        <div className="mt-7 rounded-3xl border border-white/8 bg-card p-5 md:p-7">
+        <div className="mt-7 rounded-3xl border border-muted/70 bg-card p-5 md:p-7">
           {/* ============ STEP 1: URL ============ */}
           {step === "url" && (
             <div className="space-y-6">
@@ -235,14 +235,14 @@ export function WizardPage() {
                 <div
                   className={cn(
                     "rounded-2xl border p-4",
-                    check.reachable ? "border-primary/25 bg-primary/[0.06]" : "border-amber-500/30 bg-amber-500/[0.06]",
+                    check.reachable ? "border-primary/25 bg-primary/[0.06]" : "border-amber-200 bg-amber-50",
                   )}
                 >
                   <div className="flex items-start gap-3">
                     {check.reachable ? (
                       <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" />
                     ) : (
-                      <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-400" />
+                      <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-600" />
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="font-bold text-foreground">
@@ -253,7 +253,7 @@ export function WizardPage() {
                         <span
                           className={cn(
                             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-bold",
-                            check.https ? "bg-primary/12 text-primary" : "bg-amber-500/15 text-amber-400",
+                            check.https ? "bg-primary/12 text-primary" : "bg-amber-50 text-amber-600",
                           )}
                           dir="ltr"
                         >
@@ -261,7 +261,7 @@ export function WizardPage() {
                           {check.https ? d.wizard.checkHttps : d.wizard.checkNoHttps}
                         </span>
                         {check.title && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-2.5 py-1 text-muted-foreground">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-muted/70 px-2.5 py-1 text-muted-foreground">
                             {d.wizard.foundTitle}: <span className="max-w-56 truncate font-semibold text-foreground">{check.title}</span>
                           </span>
                         )}
@@ -269,7 +269,7 @@ export function WizardPage() {
                     </div>
                     {check.icon && (
                        
-                      <img src={check.icon} alt="" className="size-11 rounded-xl border border-white/10 bg-white/5 object-contain p-1.5" />
+                      <img src={check.icon} alt="" className="size-11 rounded-xl border border-border bg-card object-contain p-1.5" />
                     )}
                   </div>
                 </div>
@@ -277,7 +277,7 @@ export function WizardPage() {
 
               <button
                 onClick={useSample}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-muted/60 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
               >
                 <Sparkles className="size-4" />
                 {d.wizard.sampleCta}
@@ -306,7 +306,7 @@ export function WizardPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      className="h-11 w-11 shrink-0 rounded-xl border-white/12 bg-white/5"
+                      className="h-11 w-11 shrink-0 rounded-xl border-border bg-card"
                       onClick={() => setPkg(generatePackageName(normalizedUrl))}
                       aria-label={d.wizard.regenerate}
                     >
@@ -354,12 +354,12 @@ export function WizardPage() {
                     }}
                   />
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="rounded-xl border-white/12 bg-white/5" onClick={() => fileRef.current?.click()}>
+                    <Button variant="outline" size="sm" className="rounded-xl border-border bg-card" onClick={() => fileRef.current?.click()}>
                       <ImagePlus className="size-4 text-primary" />
                       {icon ? d.p.general.changeIcon : d.wizard.uploadIcon}
                     </Button>
                     {icon && (
-                      <Button variant="outline" size="icon" className="size-8 rounded-lg border-white/12 bg-white/5 hover:text-destructive" onClick={() => setIcon(undefined)} aria-label={d.wizard.removeIcon}>
+                      <Button variant="outline" size="icon" className="size-8 rounded-lg border-border bg-card hover:text-destructive" onClick={() => setIcon(undefined)} aria-label={d.wizard.removeIcon}>
                         <Trash2 className="size-3.5" />
                       </Button>
                     )}
@@ -377,7 +377,7 @@ export function WizardPage() {
                   </div>
                   {/* splash preview strip */}
                   <div
-                    className="flex h-28 items-center justify-center rounded-2xl border border-white/10"
+                    className="flex h-28 items-center justify-center rounded-2xl border border-border"
                     style={{ background: splashBg }}
                   >
                     <AppIconBadge name={name || "A"} icon={icon} size={52} />
@@ -403,7 +403,7 @@ export function WizardPage() {
           {step === "review" && (
             <div className="space-y-6">
               <h3 className="font-display text-lg font-bold">{d.wizard.reviewTitle}</h3>
-              <div className="overflow-hidden rounded-2xl border border-white/8">
+              <div className="overflow-hidden rounded-2xl border border-muted/70">
                 {[
                   { label: d.wizard.reviewUrl, value: url || "—", ltr: true },
                   { label: d.wizard.reviewName, value: name || "—", ltr: false },
@@ -411,7 +411,7 @@ export function WizardPage() {
                 ].map((row, i) => (
                   <div
                     key={row.label}
-                    className={cn("flex items-center justify-between gap-4 px-4 py-3.5 text-sm", i % 2 === 0 && "bg-white/[0.03]")}
+                    className={cn("flex items-center justify-between gap-4 px-4 py-3.5 text-sm", i % 2 === 0 && "bg-muted/60")}
                   >
                     <span className="shrink-0 text-muted-foreground">{row.label}</span>
                     <span className="truncate font-semibold" dir={row.ltr ? "ltr" : undefined}>

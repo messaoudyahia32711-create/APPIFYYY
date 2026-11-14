@@ -38,8 +38,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-neon: var(--neon);
-  --color-glow: var(--glow);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -48,41 +48,42 @@
 
 :root {
   --radius: 0.75rem;
-  --neon: #2ee6a8;
-  --glow: #8b7cff;
-  --background: #0a0a0b;
-  --foreground: #f2f3f5;
-  --card: #121214;
-  --card-foreground: #f2f3f5;
-  --popover: #161619;
-  --popover-foreground: #f2f3f5;
-  --primary: #2ee6a8;
-  --primary-foreground: #04120c;
-  --secondary: #1b1b20;
-  --secondary-foreground: #e6e8ea;
-  --muted: #17171b;
-  --muted-foreground: #9ba0a8;
-  --accent: #1d1d24;
-  --accent-foreground: #f2f3f5;
-  --destructive: #e5484d;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: rgba(46, 230, 168, 0.6);
-  --chart-1: #2ee6a8;
-  --chart-2: #8b7cff;
-  --chart-3: #ffb224;
-  --chart-4: #4cc2f1;
-  --chart-5: #f26d8d;
-  --sidebar: #0e0e10;
-  --sidebar-foreground: #d5d7db;
-  --sidebar-primary: #2ee6a8;
-  --sidebar-primary-foreground: #04120c;
-  --sidebar-accent: #1b1b20;
-  --sidebar-accent-foreground: #f2f3f5;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-ring: rgba(46, 230, 168, 0.6);
-  --font-app-body: "IBM Plex Sans Arabic", "Cairo Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-app-heading: "Cairo Variable", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Appilix-style light palette */
+  --background: #f5f6fa;
+  --foreground: #191b23;
+  --card: #ffffff;
+  --card-foreground: #191b23;
+  --popover: #ffffff;
+  --popover-foreground: #191b23;
+  --primary: #6d28d9;
+  --primary-foreground: #ffffff;
+  --secondary: #eef0f6;
+  --secondary-foreground: #333745;
+  --muted: #f0f1f7;
+  --muted-foreground: #6e7385;
+  --accent: #f3effd;
+  --accent-foreground: #4c1d95;
+  --destructive: #dc2626;
+  --border: #e6e8f0;
+  --input: #d8dbe6;
+  --ring: rgba(109, 40, 217, 0.35);
+  --success: #16a34a;
+  --warning: #ea9006;
+  --chart-1: #6d28d9;
+  --chart-2: #16a34a;
+  --chart-3: #ea9006;
+  --chart-4: #ef4444;
+  --chart-5: #0891b2;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #454a59;
+  --sidebar-primary: #6d28d9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3effd;
+  --sidebar-accent-foreground: #4c1d95;
+  --sidebar-border: #eceef4;
+  --sidebar-ring: rgba(109, 40, 217, 0.35);
+  --font-app-body: "Poppins", "Cairo Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-app-heading: "Poppins", "Cairo Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-app-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
@@ -95,11 +96,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "ss01";
+    font-size: 15px;
+    line-height: 1.7;
   }
   ::selection {
-    background: rgba(46, 230, 168, 0.28);
-    color: #f2f3f5;
+    background: rgba(109, 40, 217, 0.16);
+    color: #191b23;
   }
   ::-webkit-scrollbar {
     width: 8px;
@@ -109,11 +111,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(25, 27, 35, 0.16);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(25, 27, 35, 0.26);
   }
   input[type="color"] {
     -webkit-appearance: none;
@@ -126,52 +128,31 @@
     padding: 0;
   }
   input[type="color"]::-webkit-color-swatch {
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 }
 
 @layer utilities {
-  /* Glassy surface used across cards & navbars */
-  .glass {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+  /* Soft card elevation used across the dashboard */
+  .shadow-soft {
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.05);
   }
-  .glass-strong {
-    background: rgba(18, 18, 20, 0.78);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
+  .shadow-pop {
+    box-shadow: 0 8px 30px rgba(16, 24, 40, 0.12);
   }
   .glow-neon {
-    box-shadow: 0 0 24px rgba(46, 230, 168, 0.28), 0 0 64px rgba(46, 230, 168, 0.12);
-  }
-  .glow-soft {
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 6px 18px rgba(109, 40, 217, 0.28);
   }
   .text-gradient {
-    background: linear-gradient(115deg, #2ee6a8 10%, #8b7cff 90%);
+    background: linear-gradient(115deg, #6d28d9 10%, #a855f7 90%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  .bg-grid {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-    background-size: 36px 36px;
-  }
-  .bg-hero-glow {
-    background:
-      radial-gradient(58% 48% at 50% 0%, rgba(46, 230, 168, 0.11) 0%, transparent 100%),
-      radial-gradient(45% 40% at 82% 18%, rgba(139, 124, 255, 0.09) 0%, transparent 100%),
-      radial-gradient(40% 38% at 14% 30%, rgba(46, 230, 168, 0.05) 0%, transparent 100%);
-  }
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+    scrollbar-color: rgba(25, 27, 35, 0.18) transparent;
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -207,10 +188,10 @@
 @keyframes appify-pulse-glow {
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(46, 230, 168, 0.22), 0 0 52px rgba(46, 230, 168, 0.08);
+    box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.28);
   }
   50% {
-    box-shadow: 0 0 34px rgba(46, 230, 168, 0.4), 0 0 84px rgba(46, 230, 168, 0.16);
+    box-shadow: 0 0 0 14px rgba(109, 40, 217, 0);
   }
 }
 

@@ -71,7 +71,7 @@ AppifyBridge.startBiometricAuthentication({ title: "تأكيد الدفع" })
           <SectionCard key={cat} title={d.p.bridge.cats[meta.labelKey]} icon={<meta.icon className="size-4.5" />}>
             <div className="space-y-3">
               {methods.map((m) => (
-                <div key={m.sig} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3.5 transition-colors hover:border-primary/25">
+                <div key={m.sig} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-muted/70 bg-muted/50 px-4 py-3.5 transition-colors hover:border-primary/25">
                   <div className="min-w-0 flex-1">
                     <code className="block text-left font-mono text-[13px] font-bold text-primary" dir="ltr">
                       {m.sig}

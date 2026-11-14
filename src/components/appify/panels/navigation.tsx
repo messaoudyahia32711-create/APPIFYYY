@@ -32,16 +32,16 @@ function IconPicker({ value, onChange, color }: { value: string; onChange: (v: s
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/12 bg-white/5 transition-colors hover:border-primary/40"
+          className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card transition-colors hover:border-primary/40"
           aria-label="pick icon"
         >
           {createElement(getIcon(value), {
             className: "size-5",
-            style: { color: color ?? "#2EE6A8" },
+            style: { color: color ?? "#6D28D9" },
           })}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 rounded-2xl border-white/10 bg-popover p-3" side="top">
+      <PopoverContent className="w-72 rounded-2xl border-border bg-popover p-3" side="top">
         <div className="scrollbar-thin grid max-h-56 grid-cols-6 gap-1.5 overflow-y-auto">
           {ICON_NAMES.map((name) => {
             const Icon = getIcon(name);
@@ -54,7 +54,7 @@ function IconPicker({ value, onChange, color }: { value: string; onChange: (v: s
                 }}
                 className={cn(
                   "flex size-10 items-center justify-center rounded-lg transition-colors",
-                  name === value ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-white/8 hover:text-foreground",
+                  name === value ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
                 )}
                 aria-label={name}
               >
@@ -104,9 +104,9 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
         {draft.bottomNavEnabled && (
           <div className="mt-4 space-y-4">
             {/* live bar preview */}
-            <div className="rounded-2xl border border-white/8 p-3" dir="ltr">
+            <div className="rounded-2xl border border-muted/70 p-3" dir="ltr">
               <div
-                className="flex items-end justify-around overflow-hidden rounded-t-2xl border-x border-t border-white/8"
+                className="flex items-end justify-around overflow-hidden rounded-t-2xl border-x border-t border-muted/70"
                 style={{ background: draft.navBgColor, height: draft.navHeight }}
               >
                 {draft.bottomNavItems.map((item, i) => {
@@ -135,7 +135,7 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
               {draft.bottomNavItems.map((item, i) => {
                 const Icon = getIcon(item.icon);
                 return (
-                  <div key={item.id} className="flex flex-wrap items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.02] p-3">
+                  <div key={item.id} className="flex flex-wrap items-center gap-2.5 rounded-xl border border-muted/70 bg-muted/50 p-3">
                     <IconPicker value={item.icon} onChange={(v) => updateItem(item.id, { icon: v })} />
                     <Input
                       value={item.label}
@@ -183,7 +183,7 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
             </Button>
 
             {/* colors & sizes */}
-            <div className="border-t border-white/6 pt-4">
+            <div className="border-t border-muted/60 pt-4">
               <div className="mb-3 text-sm font-bold">{d.p.navigation.colors}</div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <ColorField label={d.p.navigation.navBg} value={draft.navBgColor} onChange={(v) => setDraft((p) => ({ ...p, navBgColor: v }))} />
@@ -222,13 +222,13 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
           />
           <div className="mt-3 space-y-2">
             {draft.hideOnPatterns.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-white/10 px-4 py-3 text-sm text-muted-foreground" dir="ltr">
+              <p className="rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground" dir="ltr">
                 {d.p.navigation.hidePh}
               </p>
             ) : (
               draft.hideOnPatterns.map((pat, i) => (
-                <div key={`${pat}-${i}`} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.03] px-4 py-2.5">
-                  <code className="font-mono text-sm text-amber-400" dir="ltr">{pat}</code>
+                <div key={`${pat}-${i}`} className="flex items-center justify-between rounded-xl border border-muted/70 bg-muted/60 px-4 py-2.5">
+                  <code className="font-mono text-sm text-amber-600" dir="ltr">{pat}</code>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -261,7 +261,7 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
               {draft.drawerItems.map((item) => {
                 const Icon = getIcon(item.icon);
                 return (
-                  <div key={item.id} className="flex flex-wrap items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.02] p-3">
+                  <div key={item.id} className="flex flex-wrap items-center gap-2.5 rounded-xl border border-muted/70 bg-muted/50 p-3">
                     <IconPicker value={item.icon} onChange={(v) => setDraft((p) => ({ ...p, drawerItems: p.drawerItems.map((it) => (it.id === item.id ? { ...it, icon: v } : it)) }))} />
                     <Input
                       value={item.label}
@@ -291,7 +291,7 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
               <Button
                 variant="outline"
                 onClick={() => setDraft((p) => ({ ...p, drawerItems: [...p.drawerItems, { id: uid(), label: "Section", url: app.url, icon: "compass" }] }))}
-                className="w-full rounded-xl border-dashed border-white/20 bg-white/[0.02] font-semibold text-muted-foreground hover:text-primary"
+                className="w-full rounded-xl border-dashed border-input bg-muted/50 font-semibold text-muted-foreground hover:text-primary"
               >
                 <Plus className="size-4" />
                 {d.p.navigation.addItem}
@@ -335,7 +335,7 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
                     key={o.v}
                     className={cn(
                       "flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                      draft.fabPosition === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 bg-white/[0.02] text-muted-foreground",
+                      draft.fabPosition === o.v ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground",
                     )}
                   >
                     <RadioGroupItem value={o.v} className="sr-only" />
@@ -346,7 +346,7 @@ export function NavigationPanel({ app }: { app: AppRecord }) {
             </div>
           </div>
         )}
-        <p className="mt-4 flex items-center gap-2 rounded-xl bg-white/[0.03] px-4 py-3 text-xs text-muted-foreground">
+        <p className="mt-4 flex items-center gap-2 rounded-xl bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
           <Info className="size-3.5 shrink-0 text-primary" />
           {d.p.navigation.bridgeHint}
         </p>

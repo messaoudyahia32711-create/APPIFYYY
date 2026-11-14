@@ -94,12 +94,12 @@ export function MonetizationPanel({ app }: { app: AppRecord }) {
         {draft.iapEnabled && (
           <div className="mt-4 space-y-3">
             {draft.iapProducts.length === 0 && (
-              <p className="rounded-xl border border-dashed border-white/10 px-4 py-3 text-sm text-muted-foreground">
+              <p className="rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
                 {d.p.monetization.noProducts}
               </p>
             )}
             {draft.iapProducts.map((prod: { id: string; name: string; productId: string; price: string }) => (
-              <div key={prod.id} className="flex flex-wrap items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.02] p-3">
+              <div key={prod.id} className="flex flex-wrap items-center gap-2.5 rounded-xl border border-muted/70 bg-muted/50 p-3">
                 <Input value={prod.name} onChange={(e) => setProduct(prod.id, { name: e.target.value })} placeholder={d.p.monetization.productName} className="h-10 w-36 flex-1" />
                 <Input value={prod.productId} onChange={(e) => setProduct(prod.id, { productId: e.target.value })} placeholder={d.p.monetization.productId} dir="ltr" className="h-10 min-w-28 flex-1 font-mono text-xs" />
                 <Input value={prod.price} onChange={(e) => setProduct(prod.id, { price: e.target.value })} placeholder={d.p.monetization.price} className="h-10 w-24" />
@@ -117,7 +117,7 @@ export function MonetizationPanel({ app }: { app: AppRecord }) {
             <Button
               variant="outline"
               onClick={() => setDraft((p: typeof draft) => ({ ...p, iapProducts: [...p.iapProducts, { id: uid(), name: "", productId: "", price: "" }] }))}
-              className="w-full rounded-xl border-dashed border-white/20 bg-white/[0.02] font-semibold text-muted-foreground hover:text-primary"
+              className="w-full rounded-xl border-dashed border-input bg-muted/50 font-semibold text-muted-foreground hover:text-primary"
             >
               <Plus className="size-4" />
               {d.p.monetization.addProduct}
@@ -175,7 +175,7 @@ export function AnalyticsPanel({ app }: { app: AppRecord }) {
 
       <SectionCard title={d.p.analytics.att} desc={d.p.analytics.attD} icon={<BadgeDollarSign className="size-4.5" />}>
         <ToggleRow label={d.p.analytics.attEnable} checked={draft.attRequest} onChange={(v) => setDraft((p: typeof draft) => ({ ...p, attRequest: v }))} />
-        <p className="mt-4 rounded-xl bg-white/[0.03] px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-4 rounded-xl bg-muted/60 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
           {d.p.analytics.eventsNote}
         </p>
         <SaveBar dirty={dirty} onSave={save} />
@@ -250,12 +250,12 @@ export function DeepLinkPanel({ app }: { app: AppRecord }) {
           </div>
           <div className="mt-3 space-y-2">
             {draft.patterns.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-white/10 px-4 py-3 text-sm text-muted-foreground">
+              <p className="rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
                 {d.p.deeplink.noPatterns}
               </p>
             ) : (
               draft.patterns.map((pat: string, i: number) => (
-                <div key={`${pat}-${i}`} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.03] px-4 py-2.5">
+                <div key={`${pat}-${i}`} className="flex items-center justify-between rounded-xl border border-muted/70 bg-muted/60 px-4 py-2.5">
                   <code className="font-mono text-sm text-primary" dir="ltr">{pat}</code>
                   <Button
                     variant="ghost"
@@ -277,7 +277,7 @@ export function DeepLinkPanel({ app }: { app: AppRecord }) {
             <div className="text-xs font-semibold text-muted-foreground">{d.p.deeplink.previewLink}</div>
             <code className="mt-0.5 block truncate font-mono text-sm font-bold text-primary" dir="ltr">{sampleLink}</code>
           </div>
-          <Button variant="outline" size="sm" onClick={copyLink} className="rounded-lg border-white/12 bg-white/5">
+          <Button variant="outline" size="sm" onClick={copyLink} className="rounded-lg border-border bg-card">
             <Copy className="size-3.5" />
             {d.common.copy}
           </Button>
@@ -319,7 +319,7 @@ export function CustomCodePanel({ app }: { app: AppRecord }) {
           onChange={(e) => setDraft((p: typeof draft) => ({ ...p, css: e.target.value }))}
           placeholder={d.p.code.cssPh}
           rows={7}
-          className="resize-y bg-[#0C0E11] font-mono text-[13px] text-[#C9E8D8]"
+          className="resize-y bg-[#17181d] font-mono text-[13px] text-[#d6d9e0]"
           dir="ltr"
         />
       </SectionCard>
@@ -330,7 +330,7 @@ export function CustomCodePanel({ app }: { app: AppRecord }) {
           onChange={(e) => setDraft((p: typeof draft) => ({ ...p, js: e.target.value }))}
           placeholder={d.p.code.jsPh}
           rows={7}
-          className="resize-y bg-[#0C0E11] font-mono text-[13px] text-[#C9E8D8]"
+          className="resize-y bg-[#17181d] font-mono text-[13px] text-[#d6d9e0]"
           dir="ltr"
         />
         <CodeBlock

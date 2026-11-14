@@ -81,7 +81,7 @@ export function SampleStore({
           <button onClick={() => onNavigate("cart")} className={cn(headerBtn, "relative")} aria-label="cart">
             <ShoppingCart className="size-4" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -end-1 flex size-4.5 items-center justify-center rounded-full bg-[#0A8F63] text-[9px] font-extrabold text-white" dir="ltr">
+              <span className="absolute -top-1 -end-1 flex size-4.5 items-center justify-center rounded-full bg-[#6D28D9] text-[9px] font-extrabold text-white" dir="ltr">
                 {cartCount}
               </span>
             )}
@@ -95,14 +95,14 @@ export function SampleStore({
         {page === "home" && (
           <div className="p-3.5">
             <div className="demo-hero rounded-2xl bg-gradient-to-br from-[#0A0A0B] to-[#1A1A2E] p-4 text-white">
-              <span className="inline-block rounded-full bg-[#2EE6A8]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#2EE6A8]">
+              <span className="inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary">
                 {d.store.badgeSale}
               </span>
               <h2 className="mt-2 font-display text-lg font-extrabold leading-snug">{d.store.heroTitle}</h2>
               <p className="mt-1 text-xs text-white/70">{d.store.heroSub}</p>
               <button
                 onClick={() => onNavigate("shop")}
-                className="mt-3 rounded-xl bg-[#2EE6A8] px-4 py-2 text-xs font-extrabold text-[#04120C]"
+                className="mt-3 rounded-xl bg-primary px-4 py-2 text-xs font-extrabold text-white"
               >
                 {d.store.shopNow}
               </button>
@@ -121,7 +121,7 @@ export function SampleStore({
 
             <div className="mt-4 flex items-center justify-between">
               <h3 className="font-display text-sm font-extrabold text-gray-900">{d.store.featured}</h3>
-              <button onClick={() => onNavigate("shop")} className="text-xs font-bold text-[#0A8F63]">
+              <button onClick={() => onNavigate("shop")} className="text-xs font-bold text-primary">
                 {d.store.shopNow} →
               </button>
             </div>
@@ -146,7 +146,7 @@ export function SampleStore({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={d.store.searchPh}
-                className="h-10 w-full rounded-xl border border-gray-200 bg-white ps-9 pe-3 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#0A8F63]"
+                className="h-10 w-full rounded-xl border border-gray-200 bg-white ps-9 pe-3 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#6D28D9]"
               />
             </div>
             {filtered.length === 0 ? (
@@ -169,7 +169,7 @@ export function SampleStore({
               <div className="flex flex-col items-center gap-2.5 py-10 text-center">
                 <span className="flex size-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm" aria-hidden="true">🛒</span>
                 <p className="text-sm text-gray-500">{d.store.cartEmpty}</p>
-                <button onClick={() => onNavigate("shop")} className="rounded-xl bg-[#0A8F63] px-4 py-2 text-xs font-extrabold text-white">
+                <button onClick={() => onNavigate("shop")} className="rounded-xl bg-[#6D28D9] px-4 py-2 text-xs font-extrabold text-white">
                   {d.store.shopNow}
                 </button>
               </div>
@@ -185,7 +185,7 @@ export function SampleStore({
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-xs font-bold text-gray-900">{p.name}</div>
-                          <div className="text-[11px] font-bold text-[#0A8F63]" dir="ltr">{p.price}</div>
+                          <div className="text-[11px] font-bold text-primary" dir="ltr">{p.price}</div>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <button
@@ -221,7 +221,7 @@ export function SampleStore({
                     <span className="font-display text-lg font-extrabold text-gray-900" dir="ltr">{total} {lang === "ar" ? "ر.س" : "SAR"}</span>
                   </div>
                   {paid ? (
-                    <div className="mt-3 rounded-lg bg-[#2EE6A8]/15 px-3 py-2.5 text-center text-xs font-extrabold text-[#0A8F63]">
+                    <div className="mt-3 rounded-lg bg-primary/10 px-3 py-2.5 text-center text-xs font-extrabold text-primary">
                       ✓ {d.store.payOk} — {d.store.orderPlaced}
                     </div>
                   ) : (
@@ -233,7 +233,7 @@ export function SampleStore({
                         }}
                         className="flex items-center justify-center gap-1.5 rounded-xl bg-[#0A0A0B] py-2.5 text-xs font-extrabold text-white"
                       >
-                        <Fingerprint className="size-4 text-[#2EE6A8]" />
+                        <Fingerprint className="size-4 text-primary" />
                         {d.store.payBiometric}
                       </button>
                       <button
@@ -290,7 +290,7 @@ export function SampleStore({
             ) : (
               <div className="mt-3 space-y-2.5">
                 <div className="flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
-                  <span className="flex size-11 items-center justify-center rounded-full bg-gradient-to-br from-[#2EE6A8] to-[#8B7CFF] font-display text-base font-extrabold text-[#04120C]" aria-hidden="true">
+                  <span className="flex size-11 items-center justify-center rounded-full bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] font-display text-base font-extrabold text-white" aria-hidden="true">
                     S
                   </span>
                   <div>
@@ -303,7 +303,7 @@ export function SampleStore({
                 </div>
                 <div className="rounded-2xl bg-white p-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
                   <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
-                    <Package className="size-4 text-[#0A8F63]" />
+                    <Package className="size-4 text-primary" />
                     {d.store.orders}
                   </div>
                   <div className="mt-2.5 space-y-2">
@@ -318,7 +318,7 @@ export function SampleStore({
                             <div className="text-[10px] text-gray-400" dir="ltr">#{4821 - i}</div>
                           </div>
                         </div>
-                        <span className="rounded-full bg-[#2EE6A8]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#0A8F63]">
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-extrabold text-primary">
                           {i === 0 ? "✓" : "🚚"}
                         </span>
                       </div>
@@ -326,7 +326,7 @@ export function SampleStore({
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-2xl bg-white p-3.5 text-sm font-bold text-gray-800 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
-                  <Heart className="size-4 text-[#8B7CFF]" />
+                  <Heart className="size-4 text-primary" />
                   {d.store.wishlist}
                   <span className="ms-auto rounded-full bg-gray-100 px-2 py-0.5 text-xs" dir="ltr">3</span>
                 </div>
@@ -351,14 +351,14 @@ function ProductCard({ p, i, onAdd, compact }: { p: { name: string; price: strin
           </span>
         )}
         {i === 5 && (
-          <span className="absolute top-1.5 start-1.5 rounded-full bg-[#2EE6A8] px-1.5 py-0.5 text-[8px] font-extrabold text-[#04120C]">
+          <span className="absolute top-1.5 start-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[8px] font-extrabold text-white">
             {d.store.badgeNew}
           </span>
         )}
       </div>
       <div className="p-2.5">
         <div className="truncate text-xs font-bold text-gray-900">{p.name}</div>
-        <div className="mt-0.5 text-[11px] font-extrabold text-[#0A8F63]" dir="ltr">{p.price}</div>
+        <div className="mt-0.5 text-[11px] font-extrabold text-primary" dir="ltr">{p.price}</div>
         <button
           onClick={onAdd}
           className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg bg-[#0A0A0B] py-1.5 text-[10px] font-extrabold text-white transition-transform active:scale-95"

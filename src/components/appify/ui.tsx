@@ -11,25 +11,18 @@ import { useLang } from "@/lib/appify/i18n";
 import { useAppifyStore } from "@/lib/appify/store";
 import { toast } from "@/hooks/use-toast";
 
-/* ---------- Logo ---------- */
+/* ---------- Logo (Appilix-style purple mark) ---------- */
 export function AppifyLogo({ size = 34, withText = true }: { size?: number; withText?: boolean }) {
   const { d } = useLang();
   return (
-    <span className="inline-flex items-center gap-2.5 select-none">
+    <span className="inline-flex select-none items-center gap-2.5">
       <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-        <defs>
-          <linearGradient id="appify-g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#2EE6A8" />
-            <stop offset="1" stopColor="#8B7CFF" />
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="60" height="60" rx="16" fill="#0A0A0B" />
-        <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="url(#appify-g)" strokeWidth="3" />
-        <path d="M20 44 L32 20 L44 44" fill="none" stroke="url(#appify-g)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M26 36 H38" stroke="#2EE6A8" strokeWidth="5" strokeLinecap="round" />
+        <rect x="2" y="2" width="60" height="60" rx="16" fill="#6D28D9" />
+        <path d="M20 44 L32 20 L44 44" fill="none" stroke="#ffffff" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M26.5 36 H37.5" stroke="#ffffff" strokeWidth="5.5" strokeLinecap="round" />
       </svg>
       {withText && (
-        <span className="font-display font-extrabold text-xl tracking-tight text-foreground" dir="ltr">
+        <span className="font-display text-[21px] font-bold tracking-tight text-foreground" dir="ltr">
           Appify
         </span>
       )}
@@ -46,11 +39,11 @@ export function LangToggle() {
       variant="outline"
       size="sm"
       onClick={toggleLang}
-      className="gap-1.5 rounded-full border-white/10 bg-white/5 hover:bg-white/10"
+      className="gap-1.5 rounded-full border-border bg-card px-3 font-semibold shadow-none hover:bg-muted"
       aria-label="Switch language"
     >
-      <Languages className="size-3.5" />
-      <span className="font-semibold text-xs" dir="ltr">
+      <Languages className="size-3.5 text-primary" />
+      <span className="text-xs font-bold" dir="ltr">
         {lang === "ar" ? "EN" : "عربي"}
       </span>
     </Button>
@@ -74,18 +67,18 @@ export function SectionCard({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-2xl border border-white/8 bg-card p-5 md:p-6", className)}>
+    <section className={cn("rounded-2xl border border-border bg-card shadow-soft p-5 md:p-6", className)}>
       {(title || actions) && (
-        <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="mb-5 flex items-start justify-between gap-3 border-b border-border/70 pb-4">
           <div className="flex items-start gap-3">
             {icon && (
-              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-primary">
                 {icon}
               </span>
             )}
             <div>
-              {title && <h3 className="font-display text-base font-bold text-foreground md:text-lg">{title}</h3>}
-              {desc && <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{desc}</p>}
+              {title && <h3 className="text-base font-bold text-foreground md:text-[17px]">{title}</h3>}
+              {desc && <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{desc}</p>}
             </div>
           </div>
           {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
@@ -111,9 +104,9 @@ export function ToggleRow({
   icon?: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-white/6 bg-white/[0.02] px-4 py-3.5 transition-colors hover:bg-white/[0.04]">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/50 px-4 py-3.5 transition-colors hover:bg-muted">
       <div className="flex min-w-0 items-center gap-3">
-        {icon && <span className="text-muted-foreground">{icon}</span>}
+        {icon && <span className="text-primary/70">{icon}</span>}
         <div className="min-w-0">
           <div className="text-sm font-semibold text-foreground">{label}</div>
           {desc && <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{desc}</div>}
@@ -140,7 +133,7 @@ export function LabeledField({
 }) {
   return (
     <div className={cn("space-y-2", className)}>
-      <Label className="text-sm font-semibold text-foreground">{label}</Label>
+      <Label className="text-[13px] font-semibold text-foreground">{label}</Label>
       <div dir={dir}>{children}</div>
       {hint && <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
     </div>
@@ -192,24 +185,24 @@ export function CodeBlock({ code, title }: { code: string; title?: string }) {
     setTimeout(() => setCopied(false), 1800);
   };
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0C0E11]">
+    <div className="overflow-hidden rounded-xl border border-border bg-[#17181d]">
       <div className="flex items-center justify-between border-b border-white/8 px-3.5 py-2">
         <div className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-[#FF5F57]" />
           <span className="size-2.5 rounded-full bg-[#FFBD2E]" />
           <span className="size-2.5 rounded-full bg-[#28C840]" />
-          {title && <span className="ms-2 text-xs font-medium text-muted-foreground">{title}</span>}
+          {title && <span className="ms-2 text-xs font-medium text-white/55">{title}</span>}
         </div>
         <button
           onClick={doCopy}
-          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-white/8 hover:text-foreground"
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-white/60 transition-colors hover:bg-white/10 hover:text-white"
           aria-label={d.common.copy}
         >
-          {copied ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}
+          {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
           <span>{copied ? d.common.copied : d.common.copy}</span>
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 text-left font-mono text-[13px] leading-relaxed text-[#C9E8D8]" dir="ltr">
+      <pre className="overflow-x-auto p-4 text-left font-mono text-[13px] leading-relaxed text-[#d6d9e0]" dir="ltr">
         <code>{code}</code>
       </pre>
     </div>
@@ -220,11 +213,11 @@ export function CodeBlock({ code, title }: { code: string; title?: string }) {
 export function SaveBar({ dirty, onSave, saving }: { dirty: boolean; onSave: () => void; saving?: boolean }) {
   const { d } = useLang();
   return (
-    <div className="sticky bottom-4 z-20 mt-6 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-popover/95 px-4 py-3 shadow-2xl backdrop-blur-xl">
-      <span className={cn("text-sm font-medium", dirty ? "text-amber-400" : "text-muted-foreground")}>
+    <div className="sticky bottom-4 z-20 mt-6 flex items-center justify-between gap-3 rounded-2xl border border-border bg-popover/95 px-4 py-3 shadow-pop backdrop-blur-xl">
+      <span className={cn("text-sm font-medium", dirty ? "text-warning" : "text-muted-foreground")}>
         {dirty ? d.ws.dirty : `✓ ${d.common.saved}`}
       </span>
-      <Button onClick={onSave} disabled={!dirty || saving} className="rounded-xl font-semibold">
+      <Button onClick={onSave} disabled={!dirty || saving} className="rounded-xl bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
         {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
         {saving ? d.common.saving : d.common.save}
       </Button>
@@ -232,17 +225,16 @@ export function SaveBar({ dirty, onSave, saving }: { dirty: boolean; onSave: () 
   );
 }
 
-/* ---------- App icon badge ---------- */
+/* ---------- App icon badge (Appilix-style purple tile) ---------- */
 export function AppIconBadge({ name, icon, size = 44, className }: { name: string; icon?: string; size?: number; className?: string }) {
   const initial = name?.trim()?.[0] ?? "A";
   return (
     <span
-      className={cn("inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#2EE6A8] to-[#8B7CFF] font-display font-extrabold text-[#04120C]", className)}
+      className={cn("inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[24%] bg-primary font-display font-extrabold text-primary-foreground shadow-soft", className)}
       style={{ width: size, height: size, fontSize: size * 0.42 }}
       aria-hidden="true"
     >
       {icon ? (
-         
         <img src={icon} alt="" className="size-full object-cover" />
       ) : (
         initial
@@ -255,10 +247,10 @@ export function AppIconBadge({ name, icon, size = 44, className }: { name: strin
 export function PlatformChips({ platforms, className }: { platforms: ("android" | "ios")[]; className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>
-      <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-foreground">
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-secondary-foreground">
         <span aria-hidden="true">🤖</span> Android
       </span>
-      <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-foreground">
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-secondary-foreground">
         <span aria-hidden="true">🍎</span> iOS
       </span>
     </span>
@@ -268,9 +260,9 @@ export function PlatformChips({ platforms, className }: { platforms: ("android" 
 /* ---------- Empty state ---------- */
 export function EmptyState({ icon, title, desc, action }: { icon: ReactNode; title: string; desc?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/12 bg-white/[0.02] px-6 py-14 text-center">
-      <span className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-white/6 text-muted-foreground">{icon}</span>
-      <h3 className="font-display text-lg font-bold">{title}</h3>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-input bg-card px-6 py-14 text-center shadow-soft">
+      <span className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-accent text-primary">{icon}</span>
+      <h3 className="text-lg font-bold">{title}</h3>
       {desc && <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">{desc}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -278,14 +270,16 @@ export function EmptyState({ icon, title, desc, action }: { icon: ReactNode; tit
 }
 
 /* ---------- Stat card ---------- */
-export function StatCard({ label, value, icon }: { label: string; value: ReactNode; icon: ReactNode }) {
+export function StatCard({ label, value, icon, tone = "primary" }: { label: string; value: ReactNode; icon: ReactNode; tone?: "primary" | "green" | "orange" }) {
+  const toneCls =
+    tone === "green" ? "bg-emerald-50 text-emerald-600" : tone === "orange" ? "bg-amber-50 text-amber-600" : "bg-accent text-primary";
   return (
-    <div className="rounded-2xl border border-white/8 bg-card p-4 md:p-5">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground md:text-sm">{label}</span>
-        <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</span>
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-soft md:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs font-medium text-muted-foreground md:text-[13px]">{label}</span>
+        <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", toneCls)}>{icon}</span>
       </div>
-      <div className="mt-2 font-display text-2xl font-extrabold text-foreground md:text-3xl">{value}</div>
+      <div className="mt-2 text-2xl font-bold text-foreground md:text-3xl">{value}</div>
     </div>
   );
 }
@@ -294,7 +288,7 @@ export function StatCard({ label, value, icon }: { label: string; value: ReactNo
 export function PanelHeader({ title, desc }: { title: string; desc?: string }) {
   return (
     <div className="mb-5">
-      <h2 className="font-display text-xl font-extrabold text-foreground md:text-2xl">{title}</h2>
+      <h2 className="text-xl font-bold text-foreground md:text-2xl">{title}</h2>
       {desc && <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{desc}</p>}
     </div>
   );

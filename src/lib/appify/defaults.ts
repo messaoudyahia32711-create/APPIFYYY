@@ -44,18 +44,18 @@ export function defaultSettings(): AppSettings {
 
 export function defaultStyle(): AppStyle {
   return {
-    statusBarColor: "#0A0A0B",
+    statusBarColor: "#6D28D9",
     statusBarContent: "light",
     appBgColor: "#FFFFFF",
-    splashBg: "#0A0A0B",
-    splashLogoColor: "#2EE6A8",
+    splashBg: "#6D28D9",
+    splashLogoColor: "#FFFFFF",
     splashDuration: 1600,
     orientation: "portrait",
     fullscreen: false,
     theme: "auto",
     appBarEnabled: false,
     appBarTitle: "",
-    appBarColor: "#0A0A0B",
+    appBarColor: "#6D28D9",
   };
 }
 
@@ -65,9 +65,9 @@ export function defaultNavigation(url: string): NavigationConfig {
     bottomNavItems: [
       { id: uid(), label: "الرئيسية", url, icon: "home" },
     ],
-    navBgColor: "#0F1115",
-    navActiveColor: "#2EE6A8",
-    navInactiveColor: "#8A8F98",
+    navBgColor: "#FFFFFF",
+    navActiveColor: "#6D28D9",
+    navInactiveColor: "#9AA0AE",
     navIconSize: 24,
     navHeight: 62,
     navShowLabels: true,
@@ -78,7 +78,7 @@ export function defaultNavigation(url: string): NavigationConfig {
     fabEnabled: false,
     fabIcon: "messageCircle",
     fabUrl: url,
-    fabColor: "#2EE6A8",
+    fabColor: "#6D28D9",
     fabPosition: "end",
   };
 }
@@ -218,23 +218,23 @@ export function createDemoApp(): AppRecord {
     },
     style: {
       ...defaultStyle(),
-      statusBarColor: "#0F1115",
+      statusBarColor: "#6D28D9",
       statusBarContent: "light",
       appBgColor: "#F7F8FA",
-      splashBg: "#0A0A0B",
-      splashLogoColor: "#2EE6A8",
+      splashBg: "#6D28D9",
+      splashLogoColor: "#FFFFFF",
       splashDuration: 1600,
       theme: "auto",
       appBarEnabled: true,
       appBarTitle: "متجر النخبة",
-      appBarColor: "#0F1115",
+      appBarColor: "#6D28D9",
     },
     navigation: {
       bottomNavEnabled: true,
       bottomNavItems: navItems,
-      navBgColor: "#0F1115",
-      navActiveColor: "#2EE6A8",
-      navInactiveColor: "#8A8F98",
+      navBgColor: "#FFFFFF",
+      navActiveColor: "#6D28D9",
+      navInactiveColor: "#9AA0AE",
       navIconSize: 24,
       navHeight: 62,
       navShowLabels: true,
@@ -249,7 +249,7 @@ export function createDemoApp(): AppRecord {
       fabEnabled: true,
       fabIcon: "qrCode",
       fabUrl: `${SAMPLE_URL}/shop`,
-      fabColor: "#2EE6A8",
+      fabColor: "#6D28D9",
       fabPosition: "end",
     },
     integrations: {
