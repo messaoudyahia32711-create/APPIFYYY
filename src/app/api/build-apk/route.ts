@@ -39,12 +39,18 @@ export async function POST(req: NextRequest) {
 
   // 1. If an external APK builder worker is configured (e.g., when hosted on Vercel), proxy the request to it
   const externalBuilderUrl = process.env.APK_BUILDER_SERVICE_URL;
-  if (externalBuilderUrl) {
+  if (externalBuilderUrl && externalBuilderUrl.trim()) {
+    let targetUrl = externalBuilderUrl.trim();
+    if (!targetUrl.endsWith("/build") && !targetUrl.endsWith("/api/build-apk")) {
+      targetUrl = targetUrl.replace(/\/+$/, "") + "/build";
+    }
+
     try {
-      const extRes = await fetch(externalBuilderUrl, {
+      const extRes = await fetch(targetUrl, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(240_000),
       });
 
       if (!extRes.ok) {
