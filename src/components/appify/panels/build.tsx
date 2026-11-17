@@ -92,17 +92,19 @@ export function BuildPanel({ app }: { app: AppRecord }) {
           document.body.removeChild(a);
           toast({ title: d.toast.apkReady });
         } else {
-          // Graceful fallback for serverless environments (e.g. Vercel) where local Android SDK cannot run
-          await downloadBuildPackage(app, b, lang);
           toast({
-            title: lang === "ar" ? "تم تحميل حزمة المشروع (ZIP)" : "Project package downloaded (ZIP)",
+            title: lang === "ar" ? "جاري تجهيز ملف الـ APK..." : "Preparing APK file...",
             description:
               lang === "ar"
-                ? "نظراً لأن بيئة Vercel السحابية لا تدعم تجميع ملفات APK محلياً، تم تجهيز وتنزيل حزمة الكود المصدري الكاملة."
-                : "Since Vercel cannot execute raw Android SDK compilation, the full source package was downloaded.",
+                ? "خادم البناء يستيقظ حالياً من وضع الخمول (Cold Start)، يرجى الانتظار 30 ثانية والمحاولة مجدداً."
+                : "Builder is waking up from idle state, please retry in 30 seconds.",
+            variant: "destructive",
           });
         }
       } else {
+        await downloadBuildPackage(app, b, lang);
+        toast({ title: d.toast.zipReady });
+      }
         await downloadBuildPackage(app, b, lang);
         toast({ title: d.toast.zipReady });
       }
@@ -116,29 +118,41 @@ export function BuildPanel({ app }: { app: AppRecord }) {
   /* Produce the real, signed, installable APK on the server and cache the
    * blob under the build id. Returns the cached artifact (or null). */
   const requestRealApk = async (record: BuildRecord): Promise<ApkArtifact | null> => {
-    try {
-      const res = await fetch("/api/build-apk", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          app,
-          build: { version: record.version, versionCode: record.versionCode },
-        }),
-      });
-      if (!res.ok) return null;
-      const blob = await res.blob();
-      if (!blob.size) return null;
-      const safe = (app.name || "app").replace(/[^\w.-]+/g, "-").replace(/^-|-$/g, "") || "app";
-      const artifact: ApkArtifact = {
-        url: URL.createObjectURL(blob),
-        name: `${safe}-v${record.version}-${record.versionCode}.apk`,
-        sizeMb: blob.size / (1024 * 1024),
-      };
-      setApkArtifacts((prev) => ({ ...prev, [record.id]: artifact }));
-      return artifact;
-    } catch {
-      return null;
+    const payload = JSON.stringify({
+      app,
+      build: { version: record.version, versionCode: record.versionCode },
+    });
+
+    // Primary: Call the active Render APK builder directly to avoid Vercel 15s serverless execution timeouts
+    // Fallback: Call local /api/build-apk proxy
+    const builderEndpoints = [
+      process.env.NEXT_PUBLIC_APK_BUILDER_URL || "https://appifyyy.onrender.com/build",
+      "/api/build-apk",
+    ];
+
+    for (const endpoint of builderEndpoints) {
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: payload,
+        });
+        if (!res.ok) continue;
+        const blob = await res.blob();
+        if (!blob || !blob.size) continue;
+        const safe = (app.name || "app").replace(/[^\w.-]+/g, "-").replace(/^-|-$/g, "") || "app";
+        const artifact: ApkArtifact = {
+          url: URL.createObjectURL(blob),
+          name: `${safe}-v${record.version}-${record.versionCode}.apk`,
+          sizeMb: blob.size / (1024 * 1024),
+        };
+        setApkArtifacts((prev) => ({ ...prev, [record.id]: artifact }));
+        return artifact;
+      } catch (err) {
+        console.warn(`Builder endpoint ${endpoint} failed, trying fallback...`, err);
+      }
     }
+    return null;
   };
 
   const startBuild = () => {
