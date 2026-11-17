@@ -23,14 +23,17 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw
 
-SDK = "/home/z/my-project/android-sdk"
-AAPT2 = os.path.join(SDK, "build-tools", "aapt2")
-D8_JAR = os.path.join(SDK, "build-tools", "lib", "d8.jar")
-ECJ_JAR = os.path.join(SDK, "ecj.jar")
-ANDROID_JAR = os.path.join(SDK, "platform", "android.jar")
-KEYSTORE = "/home/z/my-project/android-template/appify-release.jks"
-KS_ALIAS = "appify"
-KS_PASS = "appify-store-pass"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+
+SDK = os.environ.get("ANDROID_SDK_ROOT") or os.path.join(PROJECT_ROOT, "android-sdk")
+AAPT2 = os.environ.get("AAPT2_PATH") or os.path.join(SDK, "build-tools", "aapt2")
+D8_JAR = os.environ.get("D8_JAR_PATH") or os.path.join(SDK, "build-tools", "lib", "d8.jar")
+ECJ_JAR = os.environ.get("ECJ_JAR_PATH") or os.path.join(SDK, "ecj.jar")
+ANDROID_JAR = os.environ.get("ANDROID_JAR_PATH") or os.path.join(SDK, "platform", "android.jar")
+KEYSTORE = os.environ.get("KEYSTORE_PATH") or os.path.join(PROJECT_ROOT, "android-template", "appify-release.jks")
+KS_ALIAS = os.environ.get("KEYSTORE_ALIAS", "appify")
+KS_PASS = os.environ.get("KEYSTORE_PASS", "appify-store-pass")
 
 # icon key -> emoji used inside the native bottom nav / drawer / FAB
 EMOJI = {

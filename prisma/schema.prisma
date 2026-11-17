@@ -1,16 +1,14 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -29,4 +27,31 @@ model Post {
   authorId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model App {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  packageName String?
+  version     String   @default("1.0.0")
+  versionCode Int      @default(1)
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  builds      Build[]
+}
+
+model Build {
+  id          String   @id @default(cuid())
+  appId       String
+  app         App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  platform    String   @default("android") // android | ios
+  output      String   @default("apk")     // apk | aab | pwa | zip
+  version     String
+  versionCode Int
+  status      String   @default("pending") // pending | running | success | failed
+  artifactUrl String?
+  sizeMb      Float?
+  createdAt   DateTime @default(now())
 }

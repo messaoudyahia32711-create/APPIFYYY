@@ -30,12 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
 
 # vercel
 .vercel
-
 
 # typescript
 *.tsbuildinfo
@@ -48,7 +48,20 @@ dev.log
 dev.out.log
 test
 prompt
-
 server.log
+*.pid
+dev.pid
+
+# SQLite databases & temp artifacts
+db/*.db
+db/*.db-journal
+tool-results/
+
+# Temporary generated download packages (keep README only)
+download/*.apk
+download/*.zip
+download/*.idsig
+!download/README.md
+
 # Skills directory
 /skills/

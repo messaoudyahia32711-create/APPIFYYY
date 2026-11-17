@@ -37,21 +37,81 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "missing app config" }, { status: 400 });
   }
 
+  // 1. If an external APK builder worker is configured (e.g., when hosted on Vercel), proxy the request to it
+  const externalBuilderUrl = process.env.APK_BUILDER_SERVICE_URL;
+  if (externalBuilderUrl) {
+    try {
+      const extRes = await fetch(externalBuilderUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!extRes.ok) {
+        const errorText = await extRes.text();
+        return NextResponse.json(
+          { ok: false, error: errorText || `External builder responded with status ${extRes.status}` },
+          { status: extRes.status },
+        );
+      }
+
+      const buf = await extRes.arrayBuffer();
+      const name = asciiFallback(payload.app.name ?? "appify-app");
+      const version = (payload.build?.version ?? "1.0.0").toString().replace(/[^\w.-]/g, "");
+      const code = (payload.build?.versionCode ?? 1).toString().replace(/[^\d]/g, "") || "1";
+      const filename = `${name}-v${version}-${code}.apk`;
+
+      return new NextResponse(new Uint8Array(buf), {
+        status: 200,
+        headers: {
+          "content-type": "application/vnd.android.package-archive",
+          "content-length": String(buf.byteLength),
+          "content-disposition": `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+          "cache-control": "no-store",
+        },
+      });
+    } catch (err) {
+      return NextResponse.json(
+        { ok: false, error: err instanceof Error ? err.message : "Failed to connect to external APK builder" },
+        { status: 502 },
+      );
+    }
+  }
+
+  // 2. Check if running inside Vercel serverless environment without an external worker configured
+  const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  const scriptPath =
+    process.env.APK_BUILDER_SCRIPT || path.join(process.cwd(), "scripts", "apk_builder.py");
+
+  // In Vercel serverless functions, the full Android toolchain cannot run locally due to lambda size limits.
+  if (isVercel) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "Vercel serverless functions cannot execute local Android SDK builds directly. Please configure APK_BUILDER_SERVICE_URL with a dedicated build server or download the full project package to build locally.",
+      },
+      { status: 501 },
+    );
+  }
+
+  // 3. Local/Dedicated Server Execution
   const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const tmp = path.join(os.tmpdir(), `appify-apk-${stamp}`);
   const cfgPath = path.join(tmp, "config.json");
   const apkPath = path.join(tmp, "app.apk");
+  const pythonBin =
+    process.env.PYTHON_BIN || (process.platform === "win32" ? "python" : "python3");
 
   try {
     await fs.mkdir(tmp, { recursive: true });
     await fs.writeFile(cfgPath, JSON.stringify(payload), "utf8");
 
     try {
-      await run(
-        "python3",
-        ["/home/z/my-project/scripts/apk_builder.py", cfgPath, apkPath],
-        { timeout: 280_000, maxBuffer: 96 * 1024 * 1024 },
-      );
+      await run(pythonBin, [scriptPath, cfgPath, apkPath], {
+        timeout: 280_000,
+        maxBuffer: 96 * 1024 * 1024,
+      });
     } catch (e) {
       const err = e as { stderr?: string; stdout?: string; message?: string };
       const detail =
