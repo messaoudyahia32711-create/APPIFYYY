@@ -83,14 +83,25 @@ export function BuildPanel({ app }: { app: AppRecord }) {
           const rebuilt = await requestRealApk(b);
           if (rebuilt && rebuilt.url) artifact = rebuilt;
         }
-        if (!artifact || !artifact.url) throw new Error("apk build failed");
-        const a = document.createElement("a");
-        a.href = artifact.url;
-        a.download = artifact.name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        toast({ title: d.toast.apkReady });
+        if (artifact && artifact.url) {
+          const a = document.createElement("a");
+          a.href = artifact.url;
+          a.download = artifact.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          toast({ title: d.toast.apkReady });
+        } else {
+          // Graceful fallback for serverless environments (e.g. Vercel) where local Android SDK cannot run
+          await downloadBuildPackage(app, b, lang);
+          toast({
+            title: lang === "ar" ? "تم تحميل حزمة المشروع (ZIP)" : "Project package downloaded (ZIP)",
+            description:
+              lang === "ar"
+                ? "نظراً لأن بيئة Vercel السحابية لا تدعم تجميع ملفات APK محلياً، تم تجهيز وتنزيل حزمة الكود المصدري الكاملة."
+                : "Since Vercel cannot execute raw Android SDK compilation, the full source package was downloaded.",
+          });
+        }
       } else {
         await downloadBuildPackage(app, b, lang);
         toast({ title: d.toast.zipReady });
