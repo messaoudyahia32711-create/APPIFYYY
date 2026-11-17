@@ -1,12 +1,14 @@
 # ==============================================================================
-# Full-Stack Appify Dockerfile (Next.js 16 + Android SDK + Python APK Builder)
+# Appify APK Builder Microservice Dockerfile
 # ==============================================================================
-# Run on Railway, Render, Fly.io, Coolify, or any Linux VPS with 1-Click
+# Lightweight image for Render (Free Tier 512MB RAM), Railway, Fly.io, Koyeb
+# Runs scripts/builder_server.py to compile signed APK binaries on demand
 # ==============================================================================
 
-FROM node:22-bookworm-slim AS base
+FROM ubuntu:22.04
 
-# Install OpenJDK 17, Python 3, and Pillow
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pil \
@@ -16,30 +18,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Step 1: Install dependencies
-COPY package.json package-lock.json ./
-COPY prisma ./prisma/
-RUN npm ci
+COPY android-sdk/ ./android-sdk/
+COPY android-template/ ./android-template/
+COPY scripts/ ./scripts/
 
-# Step 2: Copy project files
-COPY . .
-
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Ensure execute permissions on Android build-tools binaries
+# Ensure executable permissions on Linux Android SDK binaries
 RUN chmod +x android-sdk/build-tools/aapt* android-sdk/build-tools/zipalign android-sdk/build-tools/apksigner 2>/dev/null || true
 
-# Step 3: Build Next.js application
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-RUN npm run build:standalone
+ENV PORT=8080
+EXPOSE 8080
 
-# Set environment variables
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-EXPOSE 3000
-
-# Start Next.js standalone server
-CMD ["node", ".next/standalone/server.js"]
+CMD ["python3", "scripts/builder_server.py"]
